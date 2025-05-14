@@ -214,7 +214,7 @@ const AffiliateDetailPage: React.FC = () => {
     return situation ? situationMap[situation] || situation : 'No especificada';
   };
 
-  const generatePDF = () => {
+  const generatePDF = async () => {
     if (!affiliate) {
       console.error('No se encontró información del afiliado.');
       return;
@@ -223,44 +223,90 @@ const AffiliateDetailPage: React.FC = () => {
     try {
       const doc = new jsPDF();
   
+      // Logo de Asura
+      const logoUrl = 'https://res.cloudinary.com/dhvrrxejo/image/upload/v1744998417/asura_logo_alfa_1_ct0uis.png'; // Cambia esta ruta al logo de Asura
+      const profilePhotoUrl = affiliate.photo_url || '';
+  
+      // Cargar el logo y la foto de perfil
+      const loadImages = async () => {
+        try {
+          const logoImage = await fetch(logoUrl).then((res) => res.blob());
+          const profileImage = profilePhotoUrl
+            ? await fetch(profilePhotoUrl).then((res) => res.blob())
+            : null;
+  
+          const logoData = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(logoImage);
+          });
+  
+          const profileData = profileImage
+            ? await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(profileImage);
+              })
+            : null;
+  
+          return { logoData, profileData };
+        } catch (error) {
+          console.error('Error al cargar imágenes:', error);
+          return { logoData: null, profileData: null };
+        }
+      };
+  
+      const { logoData, profileData } = await loadImages();
+  
+      // Agregar el logo
+      if (logoData) {
+        if (typeof logoData === 'string' && logoData.startsWith('data:image/')) {
+          doc.addImage(logoData, 'PNG', 10, 10, 40, 40);
+        } else {
+          console.error('Invalid logo data:', logoData);
+        }
+      }
+  
       // Título del documento
       doc.setFontSize(18);
-      doc.text('Resumen del Afiliado', 14, 20);
+      doc.text('Resumen del Afiliado', 70, 20);
+  
+      // Fecha de impresión
+      const printDate = new Date().toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      doc.setFontSize(10);
+      doc.text(`Fecha de impresión: ${printDate}`, 90, 230);
+  
+      // Foto de perfil
+      if (profileData) {
+        if (typeof profileData === 'string' && profileData.startsWith('data:image/')) {
+          doc.addImage(profileData, 'JPEG', 150, 40, 40, 40);
+        } else {
+          console.error('Invalid profile image data:', profileData);
+        }
+      }
   
       // Información personal
       doc.setFontSize(14);
-      doc.text('Información Personal', 14, 30);
+      doc.text('Información Personal', 14, 60);
       doc.setFontSize(12);
-      doc.text(`Nombre: ${affiliate.name}`, 14, 40);
-      doc.text(`Documento de Identidad: ${affiliate.document_id || 'No especificado'}`, 14, 50);
-      doc.text(`Estado Civil: ${getMaritalStatusText(affiliate.marital_status)}`, 14, 60);
-      doc.text(`Cantidad de Hijos: ${affiliate.children_count || 'No especificado'}`, 14, 70);
-      doc.text(`Fecha de Nacimiento: ${affiliate.birth_date ? formatDate(affiliate.birth_date) : 'No especificada'}`, 14, 80);
-      doc.text(`Fecha de Afiliación: ${formatDate(affiliate.join_date)}`, 14, 90);
+      doc.text(`Nombre: ${affiliate.name}`, 14, 70);
+      doc.text(`Documento de Identidad: ${affiliate.document_id || 'No especificado'}`, 14, 80);
+      doc.text(`Estado Civil: ${getMaritalStatusText(affiliate.marital_status)}`, 14, 90);
+      doc.text(`Cantidad de Hijos: ${affiliate.children_count || 'No especificado'}`, 14, 100);
+      doc.text(`Fecha de Nacimiento: ${affiliate.birth_date ? formatDate(affiliate.birth_date) : 'No especificada'}`, 14, 110);
+      doc.text(`Fecha de Afiliación: ${formatDate(affiliate.join_date)}`, 14, 120);
   
       // Información de contacto
       doc.setFontSize(14);
-      doc.text('Información de Contacto', 14, 110);
+      doc.text('Información de Contacto', 14, 140);
       doc.setFontSize(12);
-      doc.text(`Teléfono: ${affiliate.phone || 'No especificado'}`, 14, 120);
-      doc.text(`Correo Electrónico: ${affiliate.email || 'No especificado'}`, 14, 130);
-      doc.text(`Dirección: ${affiliate.address || 'No especificada'}`, 14, 140);
-  
-      // Información laboral y educativa
-      doc.setFontSize(14);
-      doc.text('Información Laboral y Educativa', 14, 160);
-      doc.setFontSize(12);
-      doc.text(`Situación Laboral: ${getEmploymentTypeText(affiliate.employment_type || null)}`, 14, 170);
-      doc.text(`Nivel Educativo: ${getEducationLevelText(affiliate.education_level || null)}`, 14, 180);
-      doc.text(`Situación de Vivienda: ${getHousingSituationText(affiliate.housing_situation || null)}`, 14, 190);
-  
-      // Notas adicionales
-      if (affiliate.notes) {
-        doc.setFontSize(14);
-        doc.text('Notas Adicionales', 14, 210);
-        doc.setFontSize(12);
-        doc.text(affiliate.notes, 14, 220);
-      }
+      doc.text(`Teléfono: ${affiliate.phone || 'No especificado'}`, 14, 150);
+      doc.text(`Correo Electrónico: ${affiliate.email || 'No especificado'}`, 14, 160);
+      doc.text(`Dirección: ${affiliate.address || 'No especificada'}`, 14, 170);
   
       // Guardar el documento
       doc.save(`Resumen_Afiliado_${affiliate.name}.pdf`);
