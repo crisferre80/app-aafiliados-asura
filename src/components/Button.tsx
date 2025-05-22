@@ -28,10 +28,11 @@ const Button: React.FC<ButtonProps> = ({
   
   // Variant styles
   const variantStyles = {
-    primary: 'bg-orange-300 text-grey-100 hover:bg-orange-700 focus:ring-green-500',
+    primary: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500',
     secondary: 'bg-blue-400 text-white hover:bg-blue-700 focus:ring-blue-500',
-    outline: 'border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 focus:ring-gray-500',
+    outline: 'border border-gray-300 bg-orange-300 text-white hover:bg-orange-400 focus:ring-gray-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+    Terciary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500',
   };
   
   // Size styles

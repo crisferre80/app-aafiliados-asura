@@ -42,8 +42,12 @@ const PaymentUploadModal: React.FC<PaymentUploadModalProps> = ({
       setIsLoading(true);
       await onSubmit(transactionId, file);
       onClose();
-    } catch (error: any) {
-      setError(error.message || 'Error al procesar el pago');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message || 'Error al procesar el pago');
+      } else {
+        setError('Error al procesar el pago');
+      }
     } finally {
       setIsLoading(false);
     }

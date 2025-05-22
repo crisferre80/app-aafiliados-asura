@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAffiliateStore, deleteAffiliate } from '../store/affiliateStore';
+import { useAffiliateStore } from '../store/affiliateStore';
 import { usePaymentStore } from '../store/paymentStore';
 import Card, { CardHeader, CardBody } from '../components/Card';
 import Button from '../components/Button';
 import PaymentTicket from '../components/PaymentTicket';
-import PaymentCalendar from '../components/PaymentCalendar';
 import PhotoModal from '../components/PhotoModal';
 import PaymentUploadModal from '../components/PaymentUploadModal';
 import { ArrowLeft, Edit, UserCheck, UserMinus, FileText, Download, Trash2, ExternalLink } from 'lucide-react';
@@ -17,8 +16,8 @@ import 'jspdf-autotable';
 const AffiliateDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { affiliates, fetchAffiliates, updateAffiliate, isLoading } = useAffiliateStore();
-  const { payments, fetchPayments, updatePayment } = usePaymentStore();
+  const { affiliates, fetchAffiliates, isLoading } = useAffiliateStore();
+  const { payments, fetchPayments, updatePayment, createPayment } = usePaymentStore();
   const [affiliate, setAffiliate] = useState<Affiliate | null>(null);
   // Removed unused currentPayment state
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
@@ -53,7 +52,7 @@ const AffiliateDetailPage: React.FC = () => {
     }
   }, [payments]);
 
-  const createPayment = async () => {
+  const generateQrPayment = React.useCallback(async () => {
     try {
       const preference = {
         items: [
@@ -61,7 +60,7 @@ const AffiliateDetailPage: React.FC = () => {
             title: 'Cuota de Afiliación',
             quantity: 1,
             currency_id: 'ARS',
-            unit_price: 1000, // Monto de la transacción
+            unit_price: 7000, // Monto de la transacción
           },
         ],
         payer: {
@@ -77,8 +76,6 @@ const AffiliateDetailPage: React.FC = () => {
 
       console.log('Payment preference created:', preference); // Use the preference object
 
-      
-
       // Generar el código QR
       const paymentUrl = `${window.location.origin}/payments/${affiliate?.id}`;
       const qrCode = await QRCode.toDataURL(paymentUrl);
@@ -86,13 +83,79 @@ const AffiliateDetailPage: React.FC = () => {
     } catch (error) {
       console.error('Error al crear la preferencia de pago:', error);
     }
-  };
+  }, [affiliate]);
 
   useEffect(() => {
     if (affiliate) {
-      createPayment();
+      generateQrPayment();
     }
-  }, [affiliate]);
+  }, [affiliate, generateQrPayment]);
+
+  // Crea un nuevo pago en el store de pagos
+  // Eliminar createPayment ya que no existe en el store
+
+  const generateMonthlyPayments = useCallback(async () => {
+    if (!affiliate || !affiliate.join_date) return;
+
+    const joinDate = new Date(affiliate.join_date);
+    const now = new Date();
+
+    // Primer vencimiento: 5 del mes de afiliación (o siguiente si se afiló después del 5)
+    let startYear = joinDate.getFullYear();
+    let startMonth = joinDate.getMonth();
+    if (joinDate.getDate() > 5) {
+      startMonth += 1;
+      if (startMonth > 11) {
+        startMonth = 0;
+        startYear += 1;
+      }
+    }
+
+    // Última cuota: 5 del mes actual
+    const endYear = now.getFullYear();
+    const endMonth = now.getMonth();
+
+    // Generar lista de fechas de vencimiento (YYYY-MM-05)
+    const paymentDates: string[] = [];
+    let year = startYear;
+    let month = startMonth;
+    while (year < endYear || (year === endYear && month <= endMonth)) {
+      const dueDate = `${year}-${String(month + 1).padStart(2, '0')}-05`;
+      paymentDates.push(dueDate);
+      month += 1;
+      if (month > 11) {
+        month = 0;
+        year += 1;
+      }
+    }
+
+    // Obtener los meses/años de las cuotas ya existentes (YYYY-MM)
+    const existingDueMonths = payments.map((p) => {
+      const d = new Date(p.due_date);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    });
+
+    // Solo crear cuotas para los meses que no existen
+    for (const dueDate of paymentDates) {
+      const [yearStr, monthStr] = dueDate.split('-');
+      const monthKey = `${yearStr}-${monthStr}`;
+      if (!existingDueMonths.includes(monthKey)) {
+        await createPayment({
+          profile_id: affiliate.id,
+          due_date: dueDate,
+          amount: 7000,
+          status: 'pending',
+        });
+      }
+    }
+  }, [affiliate, createPayment, payments]);
+
+  // Llama a la función cuando cambie el afiliado o los pagos
+  useEffect(() => {
+    if (affiliate) {
+      generateMonthlyPayments();
+    }
+  }, [affiliate, payments, generateMonthlyPayments]);
 
   if (!affiliate) {
     return (
@@ -103,22 +166,11 @@ const AffiliateDetailPage: React.FC = () => {
   }
 
   const handleToggleActive = async () => {
-    if (id) {
-      await updateAffiliate(id, { active: !affiliate.active });
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!id) return;
-
-    try {
-      await deleteAffiliate(id); // Llama a la función del store
-      setShowDeleteConfirm(false); // Cierra el modal
-      navigate('/affiliates'); // Redirige al usuario
-    } catch (error: any) {
-      console.error('Error al eliminar el afiliado:', error.message || error);
-      alert(`Ocurrió un error al intentar eliminar el afiliado: ${error.message || 'Error desconocido'}`);
-    }
+      if (id) {
+        // Aquí podrías agregar lógica adicional si es necesario antes de desactivar/eliminar el afiliado
+        setShowDeleteConfirm(false); // Cierra el modal
+        navigate('/affiliates'); // Redirige al usuario
+      }
   };
 
   const handlePhotoClick = () => {
@@ -314,6 +366,11 @@ const AffiliateDetailPage: React.FC = () => {
       console.error('Error al generar el PDF:', error);
     }
   };
+
+
+  function handleDelete(): void {
+    throw new Error('Function not implemented.');
+  }
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -671,36 +728,34 @@ const AffiliateDetailPage: React.FC = () => {
             </div>
           )}
 
+          {/* Resumen de cuotas */}
           <div className="mt-8">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-4">
               <h3 className="text-lg font-medium text-gray-900">
                 Estado de Cuotas
               </h3>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={generatePDF}
-                  className="flex items-center"
-                >
-                  <Download size={12} className="mr-2" />
-                  Descargar Resumen
-                </Button>
-                <Link to="/payments">
-                  <Button variant="outline" className="flex items-center">
-                    <FileText size={18} className="mr-2" />
-                    Ver Control de Cuotas
-                  </Button>
-                </Link>
+              <div className="flex gap-4">
+                <div className="bg-green-50 text-green-800 px-3 py-1 rounded">
+                  Pagadas: {payments.filter(p => p.status === 'paid').length}
+                </div>
+                <div className="bg-red-50 text-red-800 px-3 py-1 rounded">
+                  Pendientes: {payments.filter(p => p.status === 'pending').length}
+                </div>
+                <div className="bg-gray-100 text-gray-800 px-3 py-1 rounded">
+                  Total: {payments.length}
+                </div>
               </div>
+              <Button
+                variant="outline"
+                onClick={generatePDF}
+                className="flex items-center"
+              >
+                <Download size={12} className="mr-2" />
+                Descargar Resumen
+              </Button>
             </div>
 
-            <div className="mb-6">
-              <PaymentCalendar
-                payments={payments}
-                joinDate={affiliate.join_date}
-              />
-            </div>
-
+            {/* Opciones de pago */}
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
               <h4 className="font-medium text-yellow-800 mb-4">Opciones de Pago</h4>
               <div className="space-y-4">
@@ -728,6 +783,7 @@ const AffiliateDetailPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Tabla de cuotas */}
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -791,6 +847,7 @@ const AffiliateDetailPage: React.FC = () => {
             </div>
           </div>
 
+          {/* QR de pago */}
           <div className="mt-8 flex justify-center">
             {qrCodeUrl && (
               <div className="text-center">
@@ -818,37 +875,5 @@ export interface AffiliatePrintCardProps {
 
 export default AffiliateDetailPage;
 
-import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://tvikszgcoclrzvseflhj.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2aWtzemdjb2Nscnp2c2VmbGhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzODM2NzIsImV4cCI6MjA1OTk1OTY3Mn0._OK4_ZJUGFUCFM3t-gRSUpYW7goNw_Ug7wWb5BkCrEw';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
-deleteAffiliate: async (id: string) => {
-  const { affiliates } = useAffiliateStore.getState(); // Ensure correct state management functions are retrieved
-  try {
-    // setIsLoading(true); // Removed as it is not defined in AffiliateState
-    // Removed setError as it is not defined in AffiliateState
-
-    // Elimina el registro del afiliado en Supabase
-    const { error } = await supabase
-      .from('affiliates')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error al eliminar el afiliado en Supabase:', error);
-      throw error;
-    }
-
-    // Actualiza el estado local eliminando el afiliado
-    useAffiliateStore.setState({ affiliates });
-    // setIsLoading(false); // Removed as it is not defined in AffiliateState
-    useAffiliateStore.setState({ affiliates, isLoading: false });
-    console.log('Afiliado eliminado con éxito:', id);
-  } catch (error: any) {
-    console.error('Error en deleteAffiliate:', error.message || error);
-    useAffiliateStore.setState({ error: error.message, isLoading: false });
-    throw error;
-  }
-};

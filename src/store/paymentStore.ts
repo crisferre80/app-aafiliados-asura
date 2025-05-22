@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from 'zustand';
 import { supabase } from '../lib/supabaseClient';
 import type { Payment, PaymentVerification } from '../types/types';
@@ -14,6 +15,7 @@ interface PaymentState {
   generateMonthlyPayments: (profileId: string, startDate: string) => Promise<void>;
   generatePaymentsPDF: (profileId: string, affiliateName: string) => Promise<void>;
   generateConsolidatedPDF: () => Promise<void>;
+  createPayment: (data: Omit<Payment, 'id' | 'created_at'>) => Promise<Payment | null>;
 }
 
 export const usePaymentStore = create<PaymentState>((set, get) => ({
@@ -32,8 +34,12 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
 
       if (error) throw error;
       set({ payments: data || [], isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        set({ error: error.message, isLoading: false });
+      } else {
+        set({ error: String(error), isLoading: false });
+      }
     }
   },
 
@@ -64,8 +70,12 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
       );
       
       set({ payments, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        set({ error: error.message, isLoading: false });
+      } else {
+        set({ error: String(error), isLoading: false });
+      }
     }
   },
 
@@ -77,7 +87,7 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
       if (!user) throw new Error('User not authenticated');
 
       const updates = {
-        status: 'paid',
+        status: 'paid' as Payment['status'],
         transaction_id: verification.transaction_id,
         verification_notes: verification.verification_notes,
         payment_date: new Date().toISOString(),
@@ -97,6 +107,7 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
       );
       
       set({ payments, isLoading: false });
+     
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
     }
@@ -126,7 +137,7 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
     }
   },
 
-  generatePaymentsPDF: async (profileId: string, affiliateName: string) => {
+  generatePaymentsPDF: async (_profileId: string, affiliateName: string) => {
     try {
       const payments = get().payments;
       const doc = new jsPDF();
@@ -252,6 +263,25 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
       set({ isLoading: false });
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
+    }
+  },
+
+  createPayment: async (data: Omit<Payment, 'id' | 'created_at'>) => {
+    try {
+      const { data: newPayment, error } = await supabase
+        .from('payments')
+        .insert([data])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creando el pago:', error);
+        return null;
+      }
+      return newPayment as Payment;
+    } catch (error: any) {
+      set({ error: error.message });
+      return null;
     }
   }
 }));

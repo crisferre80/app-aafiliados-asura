@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAffiliateStore } from '../store/affiliateStore';
 import Card, { CardHeader, CardBody } from '../components/Card';
 import Button from '../components/Button';
@@ -11,6 +11,7 @@ const AffiliatesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showOnlyActive, setShowOnlyActive] = useState(true);
   const [filteredAffiliates, setFilteredAffiliates] = useState<Affiliate[]>([]);
+  const navigate = useNavigate();
   
   useEffect(() => {
     fetchAffiliates();
@@ -118,7 +119,7 @@ const AffiliatesPage: React.FC = () => {
                     <tr 
                       key={affiliate.id}
                       className="hover:bg-gray-50 transition-colors cursor-pointer"
-                      onClick={() => window.location.href = `/affiliates/${affiliate.id}`}
+                      onClick={() => navigate(`/affiliates/${affiliate.id}`)}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">

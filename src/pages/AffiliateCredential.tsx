@@ -61,7 +61,7 @@ const AffiliateCredential: React.FC = () => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        height: '60vh',
+        height: '100vh',
         backgroundColor: '#f0f0f0',
         padding: '50px',
       }}
@@ -87,7 +87,7 @@ const AffiliateCredential: React.FC = () => {
         }}
       >
         {/* Logo */}
-        <div style={{ position: 'absolute', top: '10px', left: '310px' }}>
+        <div style={{ position: 'absolute', top: '10px', left: '320px' }}>
           <img
             src="https://res.cloudinary.com/dhvrrxejo/image/upload/v1744998417/asura_logo_alfa_1_ct0uis.png"
             alt="Logo Asura"
@@ -99,9 +99,9 @@ const AffiliateCredential: React.FC = () => {
         <div
           style={{
             display: 'flex',
-            alignItems: 'center',
-            marginTop: '5px',
-            padding: '0 10px',
+            alignItems: 'm',
+            marginTop: '4px',
+            padding: '0 13px',
             backgroundColor: 'rgba(255, 255, 255, 0.8)', // Fondo blanco semitransparente
             borderRadius: '8px',
           }}
@@ -120,8 +120,8 @@ const AffiliateCredential: React.FC = () => {
           />
           <div
             style={{
-              marginLeft: '10px',
-              textAlign: 'left',
+              marginTop: '10px',
+              textAlign: 'center',
               overflow: 'hidden',
               whiteSpace: 'nowrap',
               textOverflow: 'ellipsis',
@@ -129,9 +129,9 @@ const AffiliateCredential: React.FC = () => {
           >
             <h2
               style={{
-                fontSize: '16px',
+                fontSize: '20px',
                 fontWeight: 'bold',
-                margin: '0',
+                margin: '15',
                 color: '#333',
               }}
             >

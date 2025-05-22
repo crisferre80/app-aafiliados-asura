@@ -37,6 +37,7 @@ const DashboardPage: React.FC = () => {
   };
   
   return (
+   
     <div className="space-y-6 animate-fadeIn">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">Panel de Control de Usuario Autenticado de ASURA</h1>
@@ -59,7 +60,7 @@ const DashboardPage: React.FC = () => {
             </div>
             <div className="ml-auto">
               <Link to="/affiliates">
-                <Button variant="outline" size="sm">Ver todos</Button>
+                <Button variant="secondary" size="sm">Ver todos</Button>
               </Link>
             </div>
           </CardBody>
@@ -80,7 +81,7 @@ const DashboardPage: React.FC = () => {
             </div>
             <div className="ml-auto">
               <Link to="/activities">
-                <Button variant="outline" size="sm">Ver todas</Button>
+                <Button variant="secondary" size="sm">Ver todas</Button>
               </Link>
             </div>
           </CardBody>

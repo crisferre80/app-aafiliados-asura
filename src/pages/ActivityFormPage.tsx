@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useActivityStore } from '../store/activityStore';
-import Card, { CardHeader, CardBody, CardFooter } from '../components/Card';
+import Card, { CardBody, CardFooter } from '../components/Card';
 import Input from '../components/Input';
 import TextArea from '../components/TextArea';
 import Button from '../components/Button';
-import { ArrowLeft, Save, Upload, Camera, X } from 'lucide-react';
+import { ArrowLeft, Save, Upload, X } from 'lucide-react';
 
 const ActivityFormPage: React.FC = () => {
   const navigate = useNavigate();
@@ -45,8 +45,8 @@ const ActivityFormPage: React.FC = () => {
         setDescription(activity.description);
         setDate(new Date(activity.event_date).toISOString().split('T')[0]);
         setLocation(activity.location);
-        setImageUrl(activity.image_url);
-        setPreviewUrl(activity.image_url);
+        setImageUrl(activity.image_url ?? null);
+        setPreviewUrl(activity.image_url ?? null);
       } else {
         // Activity not found
         navigate('/activities');
@@ -107,8 +107,9 @@ const ActivityFormPage: React.FC = () => {
       title,
       description,
       event_date: date,
+      date, // Add the required 'date' property
       location,
-      image_url: finalImageUrl,
+      image_url: finalImageUrl ?? undefined,
     };
     
     try {

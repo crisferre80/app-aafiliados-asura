@@ -2,24 +2,23 @@ import { create } from 'zustand';
 import { supabase } from '../lib/supabaseClient';
 import type { Activity } from '../types/types';
 
-interface ActivityState {
+export interface ActivityState {
   activities: Activity[];
-  isLoading: boolean;
-  error: string | null;
   fetchActivities: () => Promise<void>;
-  addActivity: (activity: Omit<Activity, 'id' | 'created_at'>) => Promise<string | null>;
-  updateActivity: (id: string, updates: Partial<Activity>) => Promise<void>;
-  uploadImage: (file: File) => Promise<string | null>;
+  isLoading: boolean;
+  deleteActivity: (id: string) => Promise<void>;
+  addActivity: (activity: Omit<Activity, 'id'>) => Promise<void>;
+  updateActivity: (id: string, activity: Partial<Activity>) => Promise<void>;
+  uploadImage: (file: File) => Promise<string>;
 }
 
 export const useActivityStore = create<ActivityState>((set, get) => ({
   activities: [],
   isLoading: false,
-  error: null,
 
   fetchActivities: async () => {
     try {
-      set({ isLoading: true, error: null });
+      set({ isLoading: true });
       const { data, error } = await supabase
         .from('activities')
         .select('*')
@@ -27,94 +26,54 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
 
       if (error) throw error;
       set({ activities: data || [], isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch {
+      set({ isLoading: false });
     }
   },
 
-  addActivity: async (activity) => {
+  deleteActivity: async (id: string) => {
+    set({ isLoading: true });
     try {
-      set({ isLoading: true, error: null });
-      
-      // Format the date properly
-      const formattedActivity = {
-        ...activity,
-        event_date: new Date(activity.event_date).toISOString(),
-      };
-
-      const { data, error } = await supabase
-        .from('activities')
-        .insert([formattedActivity])
-        .select();
-
-      if (error) throw error;
-
-      // Update state with the new activity
-      const activities = get().activities;
-      set({ 
-        activities: [...activities, ...(data || [])], 
-        isLoading: false 
-      });
-      
-      return data?.[0]?.id || null;
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
-      return null;
-    }
-  },
-
-  updateActivity: async (id, updates) => {
-    try {
-      set({ isLoading: true, error: null });
-      
-      // Format the date if it's being updated
-      const formattedUpdates = {
-        ...updates,
-        event_date: updates.event_date ? new Date(updates.event_date).toISOString() : undefined,
-      };
-
       const { error } = await supabase
         .from('activities')
-        .update(formattedUpdates)
+        .delete()
         .eq('id', id);
 
       if (error) throw error;
 
       // Update state
-      const activities = get().activities.map(a => 
-        a.id === id ? { ...a, ...updates } : a
-      );
-      
+      const activities = get().activities.filter(a => a.id !== id);
       set({ activities, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch {
+      set({ isLoading: false });
     }
   },
 
-  uploadImage: async (file) => {
-    try {
-      set({ isLoading: true, error: null });
-      
-      // Generate a unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `activity-images/${fileName}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('activities')
-        .upload(filePath, file);
+  addActivity: async (activity) => {
+    // Si tienes backend, haz el POST aquí
+    // const { data } = await supabase.from('activities').insert([activity]).select().single();
+    // set((state) => ({ activities: [data, ...state.activities] }));
 
-      if (uploadError) throw uploadError;
-      
-      const { data } = supabase.storage
-        .from('activities')
-        .getPublicUrl(filePath);
-        
-      set({ isLoading: false });
-      return data.publicUrl;
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
-      return null;
-    }
-  }
+    // Si es local:
+    const newActivity = { ...activity, id: Math.random().toString(36).substr(2, 9) };
+    set((state) => ({ activities: [newActivity, ...state.activities] }));
+  },
+
+  updateActivity: async (id, activity) => {
+    // Si tienes backend, haz el UPDATE aquí
+    // await supabase.from('activities').update(activity).eq('id', id);
+
+    set((state) => ({
+      activities: state.activities.map((a) =>
+        a.id === id ? { ...a, ...activity } : a
+      ),
+    }));
+  },
+
+  uploadImage: async (file) => {
+    // Aquí deberías subir la imagen a tu backend o a un servicio como Cloudinary/Supabase Storage
+    // y devolver la URL resultante.
+    // Por ahora, solo simula una URL local:
+    return URL.createObjectURL(file);
+  },
 }));

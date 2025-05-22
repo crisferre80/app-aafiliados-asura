@@ -9,6 +9,7 @@ export interface Affiliate {
   join_date: string;
   photo_url?: string | null;
   active: boolean;
+  inactive_since?: string | null; // <-- agrega esta línea
   notes?: string | null;
   created_at: string;
   
@@ -52,15 +53,14 @@ export interface Payment {
   id: string;
   profile_id: string;
   amount: number;
-  status: 'pending' | 'paid';
-  payment_date?: string | null;
   due_date: string;
-  payment_method?: string | null;
-  transaction_id?: string | null;
-  verified_by?: string | null;
-  verification_date?: string | null;
-  verification_notes?: string | null;
-  created_at: string;
+  status: 'pending' | 'paid';
+  payment_date?: string;
+  verified_by?: string;
+  verification_date?: string;
+  transaction_id?: string;
+  verification_notes?: string;
+  // ...other properties
 }
 
 export interface PaymentVerification {
@@ -76,7 +76,7 @@ export interface User {
 
 export interface AuthState {
   user: User | null;
-  session: any | null;
+  session: unknown | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
@@ -91,4 +91,15 @@ export interface MonthlyPayment {
   payment_date?: string;
   transaction_id?: string;
   verification_date?: string;
+}
+
+export interface Activity {
+  event_date: string | number | Date;
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  image_url?: string;
+  // ...otros campos si tienes
 }

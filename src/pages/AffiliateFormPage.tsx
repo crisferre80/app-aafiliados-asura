@@ -81,7 +81,7 @@ const AffiliateFormPage: React.FC = () => {
         setJoinDate(new Date(affiliate.join_date).toISOString().split('T')[0]);
         setActive(affiliate.active);
         setNotes(affiliate.notes || '');
-        setPhotoUrl(affiliate.photo_url);
+        setPhotoUrl(affiliate.photo_url ?? null);
         
         // Additional Information
         setMaritalStatus(affiliate.marital_status || '');
@@ -159,13 +159,42 @@ const AffiliateFormPage: React.FC = () => {
       photo_url: finalPhotoUrl,
       
       // Additional Information
-      marital_status: maritalStatus || null,
+      marital_status: (["single", "married", "divorced", "widowed", "domestic_partnership"].includes(maritalStatus)
+        ? maritalStatus as "single" | "married" | "divorced" | "widowed" | "domestic_partnership"
+        : null),
       children_count: childrenCount ? parseInt(childrenCount) : null,
       has_mobile_phone: hasMobilePhone,
-      employment_type: employmentType || null,
+      employment_type: (
+        ["formal", "informal", "unemployed", "retired", "temporary", "other"].includes(employmentType)
+          ? employmentType as "formal" | "informal" | "unemployed" | "retired" | "temporary" | "other"
+          : null
+      ),
       employment_other_details: employmentOtherDetails || null,
-      education_level: educationLevel || null,
-      housing_situation: housingSituation || null,
+      education_level: (
+        [
+          "none",
+          "primary_incomplete",
+          "primary_complete",
+          "secondary_incomplete",
+          "secondary_complete",
+          "tertiary_incomplete",
+          "tertiary_complete"
+        ].includes(educationLevel)
+          ? educationLevel as
+              | "none"
+              | "primary_incomplete"
+              | "primary_complete"
+              | "secondary_incomplete"
+              | "secondary_complete"
+              | "tertiary_incomplete"
+              | "tertiary_complete"
+          : null
+      ),
+      housing_situation: (
+        ["owned", "rented", "borrowed", "homeless", "other"].includes(housingSituation)
+          ? housingSituation as "owned" | "rented" | "borrowed" | "homeless" | "other"
+          : null
+      ),
       housing_other_details: housingOtherDetails || null,
       does_collection: doesCollection,
       collection_materials: collectionMaterials ? collectionMaterials.split(',').map(s => s.trim()) : [],
@@ -477,8 +506,6 @@ const AffiliateFormPage: React.FC = () => {
                     id="collectionMonthlyIncome"
                     label="Ingreso aproximado mensual"
                     type="number"
-                    min="0"
-                    step="0.01"
                     value={collectionMonthlyIncome}
                     onChange={(e) => setCollectionMonthlyIncome(e.target.value)}
                     error={errors.collectionMonthlyIncome}
