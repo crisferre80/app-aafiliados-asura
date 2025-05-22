@@ -28,8 +28,12 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
 
       if (error) throw error;
       set({ affiliates: data || [], isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        set({ error: error.message, isLoading: false });
+      } else {
+        set({ error: String(error), isLoading: false });
+      }
     }
   },
 
@@ -50,8 +54,12 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
       });
       
       return data?.[0]?.id || null;
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        set({ error: error.message, isLoading: false });
+      } else {
+        set({ error: String(error), isLoading: false });
+      }
       return null;
     }
   },
@@ -71,8 +79,12 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
       );
       
       set({ affiliates, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        set({ error: error.message, isLoading: false });
+      } else {
+        set({ error: String(error), isLoading: false });
+      }
     }
   },
 
@@ -116,9 +128,14 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
       const affiliates = get().affiliates.filter(a => a.id !== id);
       set({ affiliates, isLoading: false });
       console.log('Afiliado eliminado con éxito:', id);
-    } catch (error: any) {
-      console.error('Error en deleteAffiliate:', error.message);
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Error en deleteAffiliate:', error.message);
+        set({ error: error.message, isLoading: false });
+      } else {
+        console.error('Error en deleteAffiliate:', String(error));
+        set({ error: String(error), isLoading: false });
+      }
     }
   },
 
@@ -141,8 +158,12 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
         
       set({ isLoading: false });
       return data.publicUrl;
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        set({ error: error.message, isLoading: false });
+      } else {
+        set({ error: String(error), isLoading: false });
+      }
       return null;
     }
   }

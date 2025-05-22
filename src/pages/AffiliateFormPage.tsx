@@ -41,7 +41,15 @@ const AffiliateFormPage: React.FC = () => {
   const [employmentOtherDetails, setEmploymentOtherDetails] = useState('');
   
   // Education
-  const [educationLevel, setEducationLevel] = useState<string>('');
+  type EducationLevel =
+    | "none"
+    | "primary_incomplete"
+    | "primary_complete"
+    | "secondary_incomplete"
+    | "secondary_complete"
+    | "tertiary_incomplete"
+    | "tertiary_complete";
+  const [educationLevel, setEducationLevel] = useState<EducationLevel | ''>('');
   
   // Housing
   const [housingSituation, setHousingSituation] = useState<string>('');
@@ -145,6 +153,12 @@ const AffiliateFormPage: React.FC = () => {
       finalPhotoUrl = await uploadPhoto(newPhotoFile);
     }
     
+    const allowedMaritalStatuses = ["single", "married", "divorced", "widowed", "domestic_partnership"] as const;
+    type MaritalStatus = typeof allowedMaritalStatuses[number];
+
+    const allowedEmploymentTypes = ["formal", "informal", "unemployed", "retired", "temporary", "other"] as const;
+    type EmploymentType = typeof allowedEmploymentTypes[number];
+
     const affiliateData = {
       // Basic Information
       name,
@@ -156,45 +170,19 @@ const AffiliateFormPage: React.FC = () => {
       join_date: joinDate,
       active,
       notes: notes || null,
-      photo_url: finalPhotoUrl,
+      photo_url: finalPhotoUrl, // Use the uploaded or existing photo URL
+      education_level:
+        educationLevel === ''
+          ? null
+          : educationLevel,
       
       // Additional Information
-      marital_status: (["single", "married", "divorced", "widowed", "domestic_partnership"].includes(maritalStatus)
-        ? maritalStatus as "single" | "married" | "divorced" | "widowed" | "domestic_partnership"
-        : null),
+      marital_status: allowedMaritalStatuses.includes(maritalStatus as MaritalStatus) ? (maritalStatus as MaritalStatus) : null,
       children_count: childrenCount ? parseInt(childrenCount) : null,
       has_mobile_phone: hasMobilePhone,
-      employment_type: (
-        ["formal", "informal", "unemployed", "retired", "temporary", "other"].includes(employmentType)
-          ? employmentType as "formal" | "informal" | "unemployed" | "retired" | "temporary" | "other"
-          : null
-      ),
+      employment_type: allowedEmploymentTypes.includes(employmentType as EmploymentType) ? (employmentType as EmploymentType) : null,
       employment_other_details: employmentOtherDetails || null,
-      education_level: (
-        [
-          "none",
-          "primary_incomplete",
-          "primary_complete",
-          "secondary_incomplete",
-          "secondary_complete",
-          "tertiary_incomplete",
-          "tertiary_complete"
-        ].includes(educationLevel)
-          ? educationLevel as
-              | "none"
-              | "primary_incomplete"
-              | "primary_complete"
-              | "secondary_incomplete"
-              | "secondary_complete"
-              | "tertiary_incomplete"
-              | "tertiary_complete"
-          : null
-      ),
-      housing_situation: (
-        ["owned", "rented", "borrowed", "homeless", "other"].includes(housingSituation)
-          ? housingSituation as "owned" | "rented" | "borrowed" | "homeless" | "other"
-          : null
-      ),
+      housing_situation: (["owned", "rented", "borrowed", "homeless", "other"].includes(housingSituation as "owned" | "rented" | "borrowed" | "homeless" | "other") ? housingSituation as "owned" | "rented" | "borrowed" | "homeless" | "other" : null),
       housing_other_details: housingOtherDetails || null,
       does_collection: doesCollection,
       collection_materials: collectionMaterials ? collectionMaterials.split(',').map(s => s.trim()) : [],
@@ -408,7 +396,7 @@ const AffiliateFormPage: React.FC = () => {
                 </label>
                 <select
                   value={educationLevel}
-                  onChange={(e) => setEducationLevel(e.target.value)}
+                  onChange={(e) => setEducationLevel(e.target.value as EducationLevel | '')}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                 >
                   <option value="">Seleccionar...</option>
