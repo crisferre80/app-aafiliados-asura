@@ -15,6 +15,7 @@ import ActivityDetailPage from './pages/ActivityDetailPage';
 import MembershipCardPage from './pages/MembershipCardPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AffiliateCredential from './pages/AffiliateCredential';
+import ComisionDirectivaPage from './pages/ComisionDirectivaPage';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuthStore();
@@ -68,6 +69,8 @@ function App() {
             <Route path=":id" element={<ActivityDetailPage />} />
             <Route path=":id/edit" element={<ActivityFormPage />} />
           </Route>
+
+          <Route path="/comision-directiva" element={<ComisionDirectivaPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

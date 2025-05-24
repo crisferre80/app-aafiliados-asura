@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
 import { Menu, X, Home, Users, Calendar, LogOut, FileText } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import NotificationBell from './NotificationBell';
@@ -131,6 +131,12 @@ const Layout: React.FC = () => {
               <Calendar size={20} />
               <span>Actividades</span>
             </NavLink>
+            <Link
+              to="/comision-directiva"
+              className="px-4 py-2 hover:bg-gray-100 rounded transition"
+            >
+              Comisión Directiva
+            </Link>
             <button
               onClick={() => {
                 handleSignOut();
