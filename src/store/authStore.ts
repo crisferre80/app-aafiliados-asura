@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient'; // Ajusta la ruta si es necesario
 import type { AuthState } from '../types/types';
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -27,8 +27,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
         error: null
       });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false, user: null, session: null });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      set({ error: errorMessage, isLoading: false, user: null, session: null });
     }
   },
 
@@ -73,8 +74,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
         error: null
       });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false, user: null, session: null });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      set({ error: errorMessage, isLoading: false, user: null, session: null });
     }
   },
   
@@ -84,8 +86,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       set({ user: null, session: null, isLoading: false, error: null });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false, user: null, session: null });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      set({ error: errorMessage, isLoading: false, user: null, session: null });
     }
   },
 }));
@@ -108,7 +111,7 @@ export const initializeAuth = async () => {
       isLoading: false,
       error: null
     });
-  } catch (error: any) {
+  } catch {
     // Clear state and set error if session recovery fails
     useAuthStore.setState({ 
       user: null, 
@@ -120,11 +123,12 @@ export const initializeAuth = async () => {
     // Force sign out to clean up any invalid tokens
     await supabase.auth.signOut();
   }
+  }
   
   // Set up auth listener
   supabase.auth.onAuthStateChange(async (event, session) => {
     try {
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      if (event === 'SIGNED_OUT') {
         useAuthStore.setState({ 
           user: null,
           session: null,
@@ -147,7 +151,7 @@ export const initializeAuth = async () => {
         isLoading: false,
         error: null
       });
-    } catch (error: any) {
+    } catch {
       useAuthStore.setState({
         user: null,
         session: null,
@@ -158,5 +162,4 @@ export const initializeAuth = async () => {
       // Force sign out on auth errors
       await supabase.auth.signOut();
     }
-  });
-};
+});

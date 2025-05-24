@@ -8,13 +8,31 @@ import Button from '../components/Button';
 import PhotoUpload from '../components/PhotoUpload';
 import { ArrowLeft, Save } from 'lucide-react';
 
+const allowedMaritalStatuses = ["single", "married", "divorced", "widowed", "domestic_partnership"] as const;
+type MaritalStatus = typeof allowedMaritalStatuses[number];
+
+const allowedEmploymentTypes = ["formal", "informal", "unemployed", "retired", "temporary", "other"] as const;
+type EmploymentType = typeof allowedEmploymentTypes[number];
+
+type EducationLevel =
+  | "none"
+  | "primary_incomplete"
+  | "primary_complete"
+  | "secondary_incomplete"
+  | "secondary_complete"
+  | "tertiary_incomplete"
+  | "tertiary_complete";
+
+const allowedHousingSituations = ["owned", "rented", "borrowed", "homeless", "other"] as const;
+type HousingSituation = typeof allowedHousingSituations[number];
+
 const AffiliateFormPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = !!id;
-  
+
   const { affiliates, addAffiliate, updateAffiliate, uploadPhoto, isLoading, fetchAffiliates } = useAffiliateStore();
-  
+
   // Basic Information
   const [name, setName] = useState('');
   const [documentId, setDocumentId] = useState('');
@@ -32,54 +50,45 @@ const AffiliateFormPage: React.FC = () => {
   // Marital Status and Children
   const [maritalStatus, setMaritalStatus] = useState<string>('');
   const [childrenCount, setChildrenCount] = useState<string>('');
-  
+
   // Mobile Device
   const [hasMobilePhone, setHasMobilePhone] = useState(false);
-  
+
   // Employment
   const [employmentType, setEmploymentType] = useState<string>('');
   const [employmentOtherDetails, setEmploymentOtherDetails] = useState('');
-  
+
   // Education
-  type EducationLevel =
-    | "none"
-    | "primary_incomplete"
-    | "primary_complete"
-    | "secondary_incomplete"
-    | "secondary_complete"
-    | "tertiary_incomplete"
-    | "tertiary_complete";
   const [educationLevel, setEducationLevel] = useState<EducationLevel | ''>('');
-  
+
   // Housing
   const [housingSituation, setHousingSituation] = useState<string>('');
   const [housingOtherDetails, setHousingOtherDetails] = useState('');
-  
+
   // Collection Activity
   const [doesCollection, setDoesCollection] = useState(false);
   const [collectionMaterials, setCollectionMaterials] = useState('');
   const [collectionSaleLocation, setCollectionSaleLocation] = useState('');
   const [collectionFrequency, setCollectionFrequency] = useState('');
   const [collectionMonthlyIncome, setCollectionMonthlyIncome] = useState('');
-  
+
   // Social Benefits
   const [hasSocialBenefits, setHasSocialBenefits] = useState(false);
   const [socialBenefitsDetails, setSocialBenefitsDetails] = useState('');
-  
+
   // Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
+
   useEffect(() => {
     if (isEditMode && id) {
       const affiliate = affiliates.find(a => a.id === id);
-      
+
       if (!affiliate && affiliates.length === 0) {
         fetchAffiliates();
         return;
       }
-      
+
       if (affiliate) {
-        // Basic Information
         setName(affiliate.name);
         setDocumentId(affiliate.document_id);
         setPhone(affiliate.phone);
@@ -90,10 +99,9 @@ const AffiliateFormPage: React.FC = () => {
         setActive(affiliate.active);
         setNotes(affiliate.notes || '');
         setPhotoUrl(affiliate.photo_url ?? null);
-        
-        // Additional Information
+
         setMaritalStatus(affiliate.marital_status || '');
-        setChildrenCount(affiliate.children_count?.toString() || '');
+        setChildrenCount(affiliate.children_count !== null && affiliate.children_count !== undefined ? affiliate.children_count.toString() : '');
         setHasMobilePhone(affiliate.has_mobile_phone || false);
         setEmploymentType(affiliate.employment_type || '');
         setEmploymentOtherDetails(affiliate.employment_other_details || '');
@@ -101,21 +109,21 @@ const AffiliateFormPage: React.FC = () => {
         setHousingSituation(affiliate.housing_situation || '');
         setHousingOtherDetails(affiliate.housing_other_details || '');
         setDoesCollection(affiliate.does_collection || false);
-        setCollectionMaterials(affiliate.collection_materials?.join(', ') || '');
+        setCollectionMaterials(Array.isArray(affiliate.collection_materials) ? affiliate.collection_materials.join(', ') : '');
         setCollectionSaleLocation(affiliate.collection_sale_location || '');
         setCollectionFrequency(affiliate.collection_frequency || '');
-        setCollectionMonthlyIncome(affiliate.collection_monthly_income?.toString() || '');
+        setCollectionMonthlyIncome(affiliate.collection_monthly_income !== null && affiliate.collection_monthly_income !== undefined ? affiliate.collection_monthly_income.toString() : '');
         setHasSocialBenefits(affiliate.has_social_benefits || false);
-        setSocialBenefitsDetails(affiliate.social_benefits_details?.join(', ') || '');
+        setSocialBenefitsDetails(Array.isArray(affiliate.social_benefits_details) ? affiliate.social_benefits_details.join(', ') : '');
       } else {
         navigate('/affiliates');
       }
     }
   }, [id, affiliates, isEditMode, navigate, fetchAffiliates]);
-  
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!name.trim()) newErrors.name = 'El nombre es requerido';
     if (!documentId.trim()) newErrors.documentId = 'El documento es requerido';
     if (!phone.trim()) newErrors.phone = 'El teléfono es requerido';
@@ -124,40 +132,33 @@ const AffiliateFormPage: React.FC = () => {
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = 'El correo electrónico no es válido';
     }
-    
-    // Validate collection monthly income if collection is enabled
+
     if (doesCollection && collectionMonthlyIncome) {
       const income = parseFloat(collectionMonthlyIncome);
       if (isNaN(income) || income < 0) {
         newErrors.collectionMonthlyIncome = 'El ingreso mensual debe ser un número positivo';
       }
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   const handlePhotoCapture = (file: File) => {
     setNewPhotoFile(file);
     setPhotoChanged(true);
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     let finalPhotoUrl = photoUrl;
-    
+
     if (photoChanged && newPhotoFile) {
       finalPhotoUrl = await uploadPhoto(newPhotoFile);
     }
-    
-    const allowedMaritalStatuses = ["single", "married", "divorced", "widowed", "domestic_partnership"] as const;
-    type MaritalStatus = typeof allowedMaritalStatuses[number];
-
-    const allowedEmploymentTypes = ["formal", "informal", "unemployed", "retired", "temporary", "other"] as const;
-    type EmploymentType = typeof allowedEmploymentTypes[number];
 
     const affiliateData = {
       // Basic Information
@@ -170,29 +171,32 @@ const AffiliateFormPage: React.FC = () => {
       join_date: joinDate,
       active,
       notes: notes || null,
-      photo_url: finalPhotoUrl, // Use the uploaded or existing photo URL
-      education_level:
-        educationLevel === ''
-          ? null
-          : educationLevel,
-      
+      photo_url: finalPhotoUrl,
+      education_level: educationLevel === '' ? null : educationLevel,
+
       // Additional Information
       marital_status: allowedMaritalStatuses.includes(maritalStatus as MaritalStatus) ? (maritalStatus as MaritalStatus) : null,
-      children_count: childrenCount ? parseInt(childrenCount) : null,
+      children_count: childrenCount !== '' && !isNaN(Number(childrenCount)) ? parseInt(childrenCount) : null,
       has_mobile_phone: hasMobilePhone,
       employment_type: allowedEmploymentTypes.includes(employmentType as EmploymentType) ? (employmentType as EmploymentType) : null,
       employment_other_details: employmentOtherDetails || null,
-      housing_situation: (["owned", "rented", "borrowed", "homeless", "other"].includes(housingSituation as "owned" | "rented" | "borrowed" | "homeless" | "other") ? housingSituation as "owned" | "rented" | "borrowed" | "homeless" | "other" : null),
+      housing_situation: allowedHousingSituations.includes(housingSituation as HousingSituation) ? (housingSituation as HousingSituation) : null,
       housing_other_details: housingOtherDetails || null,
       does_collection: doesCollection,
-      collection_materials: collectionMaterials ? collectionMaterials.split(',').map(s => s.trim()) : [],
+      collection_materials: collectionMaterials
+        ? collectionMaterials.split(',').map(s => s.trim()).filter(Boolean)
+        : [],
       collection_sale_location: collectionSaleLocation || null,
       collection_frequency: collectionFrequency || null,
-      collection_monthly_income: doesCollection && collectionMonthlyIncome ? parseFloat(collectionMonthlyIncome) : null,
+      collection_monthly_income: doesCollection && collectionMonthlyIncome && !isNaN(Number(collectionMonthlyIncome))
+        ? parseFloat(collectionMonthlyIncome)
+        : null,
       has_social_benefits: hasSocialBenefits,
-      social_benefits_details: socialBenefitsDetails ? socialBenefitsDetails.split(',').map(s => s.trim()) : []
+      social_benefits_details: socialBenefitsDetails
+        ? socialBenefitsDetails.split(',').map(s => s.trim()).filter(Boolean)
+        : []
     };
-    
+
     if (isEditMode && id) {
       await updateAffiliate(id, affiliateData);
       navigate(`/affiliates/${id}`);
@@ -203,7 +207,7 @@ const AffiliateFormPage: React.FC = () => {
       }
     }
   };
-  
+
   return (
     <div className="space-y-6 animate-fadeIn">
       <div className="flex items-center gap-4">

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient'; // Ajusta la ruta si es necesario
 import type { Activity } from '../types/types';
 
 export interface ActivityState {

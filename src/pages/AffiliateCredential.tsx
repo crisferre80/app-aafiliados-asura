@@ -4,21 +4,21 @@ import { useAffiliateStore } from '../store/affiliateStore';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
+interface Affiliate {
+  id: string;
+  name: string;
+  photo_url?: string | null;
+  document_id?: string;
+  address?: string;
+  join_date?: string;
+  // Add other fields as needed
+}
+
 const AffiliateCredential: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { affiliates } = useAffiliateStore();
-  const credentialRef = useRef<HTMLDivElement>(null); // Ref para la credencial
-
-  type Affiliate = {
-    id: string;
-    name: string;
-    profilePicture?: string;
-    photo_url?: string | null;
-    document_id?: string;
-    address?: string;
-    join_date?: string;
-  };
+  const credentialRef = useRef<HTMLDivElement>(null);
 
   const [affiliate, setAffiliate] = useState<Affiliate | null>(null);
 
@@ -33,18 +33,14 @@ const AffiliateCredential: React.FC = () => {
 
   const handleDownloadPDF = async () => {
     if (!credentialRef.current) return;
-
     try {
-      // Capturar el contenido de la credencial como imagen
       const canvas = await html2canvas(credentialRef.current, {
         scale: 2,
-        useCORS: true, // Permitir imágenes externas
+        useCORS: true,
       });
       const imgData = canvas.toDataURL('image/png');
-
-      // Crear el PDF
-      const pdf = new jsPDF('landscape', 'mm', [100, 60]); // Tamaño personalizado
-      pdf.addImage(imgData, 'PNG', 0, 0, 100, 60); // Ajustar tamaño al PDF
+      const pdf = new jsPDF('landscape', 'mm', [100, 60]);
+      pdf.addImage(imgData, 'PNG', 0, 0, 100, 60);
       pdf.save(`credencial_${affiliate.name}.pdf`);
     } catch (error) {
       console.error('Error al generar el PDF:', error);
@@ -68,7 +64,7 @@ const AffiliateCredential: React.FC = () => {
     >
       {/* Credencial */}
       <div
-        ref={credentialRef} // Referencia para capturar la credencial
+        ref={credentialRef}
         style={{
           width: '10cm',
           height: '6cm',
@@ -99,15 +95,19 @@ const AffiliateCredential: React.FC = () => {
         <div
           style={{
             display: 'flex',
-            alignItems: 'm',
+            alignItems: 'center',
             marginTop: '4px',
             padding: '0 13px',
-            backgroundColor: 'rgba(255, 255, 255, 0.8)', // Fondo blanco semitransparente
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
             borderRadius: '8px',
           }}
         >
           <img
-            src={affiliate.photo_url || 'https://via.placeholder.com/80'}
+            src={
+              affiliate.photo_url && affiliate.photo_url !== ''
+                ? affiliate.photo_url
+                : 'https://via.placeholder.com/80'
+            }
             alt={affiliate.name}
             style={{
               width: '80px',
@@ -131,7 +131,7 @@ const AffiliateCredential: React.FC = () => {
               style={{
                 fontSize: '20px',
                 fontWeight: 'bold',
-                margin: '15',
+                margin: 0,
                 color: '#333',
               }}
             >
@@ -146,19 +146,19 @@ const AffiliateCredential: React.FC = () => {
             padding: '11px',
             fontSize: '12px',
             color: '#111',
-            backgroundColor: 'rgba(255, 255, 255, 0.8)', // Fondo blanco semitransparente
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
             borderRadius: '8px',
             marginTop: '10px',
           }}
         >
           <p style={{ margin: '5px 0' }}>
-            <strong>DNI:</strong> {affiliate.document_id}
+            <strong>DNI:</strong> {affiliate.document_id || '—'}
           </p>
           <p style={{ margin: '5px 0' }}>
-            <strong>Dirección:</strong> {affiliate.address}
+            <strong>Dirección:</strong> {affiliate.address || '—'}
           </p>
           <p style={{ margin: '5px 0' }}>
-            <strong>Fecha de Afiliación:</strong> {affiliate.join_date}
+            <strong>Fecha de Afiliación:</strong> {affiliate.join_date || '—'}
           </p>
         </div>
 
@@ -211,7 +211,7 @@ const AffiliateCredential: React.FC = () => {
 
       {/* Botón para volver */}
       <button
-        onClick={() => navigate(-1)} // Navega a la página anterior
+        onClick={() => navigate(-1)}
         style={{
           marginTop: '10px',
           padding: '10px 20px',

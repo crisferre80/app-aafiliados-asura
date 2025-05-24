@@ -16,7 +16,7 @@ import 'jspdf-autotable';
 const AffiliateDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { affiliates, fetchAffiliates, isLoading } = useAffiliateStore();
+  const { affiliates, fetchAffiliates, isLoading, updateAffiliate, deleteAffiliate } = useAffiliateStore();
   const { payments, fetchPayments, updatePayment, createPayment } = usePaymentStore();
   const [affiliate, setAffiliate] = useState<Affiliate | null>(null);
   // Removed unused currentPayment state
@@ -166,11 +166,15 @@ const AffiliateDetailPage: React.FC = () => {
   }
 
   const handleToggleActive = async () => {
-      if (id) {
-        // Aquí podrías agregar lógica adicional si es necesario antes de desactivar/eliminar el afiliado
-        setShowDeleteConfirm(false); // Cierra el modal
-        navigate('/affiliates'); // Redirige al usuario
-      }
+    if (!affiliate) return;
+    try {
+      // Cambia el estado activo al valor opuesto
+      await updateAffiliate(affiliate.id, { active: !affiliate.active });
+      // Opcional: refresca la lista o el detalle
+      fetchAffiliates();
+    } catch (error) {
+      console.error('Error al cambiar el estado del afiliado:', error);
+    }
   };
 
   const handlePhotoClick = () => {
@@ -368,9 +372,19 @@ const AffiliateDetailPage: React.FC = () => {
   };
 
 
-  function handleDelete(): void {
-    throw new Error('Function not implemented.');
+// const { deleteAffiliate, fetchAffiliates } = useAffiliateStore();
+
+const handleDelete = async () => {
+  if (!affiliate) return;
+  setShowDeleteConfirm(false); // Cierra el modal antes de continuar
+  try {
+    await deleteAffiliate(affiliate.id);
+    await fetchAffiliates();
+    navigate('/affiliates');
+  } catch {
+    alert('Error al eliminar el afiliado');
   }
+};
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -409,7 +423,6 @@ const AffiliateDetailPage: React.FC = () => {
               <Button
                 variant="danger"
                 onClick={handleDelete}
-                isLoading={isLoading}
               >
                 Eliminar
               </Button>
@@ -478,9 +491,6 @@ const AffiliateDetailPage: React.FC = () => {
               <Trash2 size={18} className="mr-2" />
               Eliminar
             </Button>
-
-            
-           
 
             <Button
               variant={affiliate.active ? 'outline' : 'primary'}

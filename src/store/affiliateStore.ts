@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../types/supabase'; // Ajusta la ruta si es necesario
 import type { Affiliate } from '../types/types';
 
 interface AffiliateState {
@@ -19,22 +19,9 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
   error: null,
 
   fetchAffiliates: async () => {
-    try {
-      set({ isLoading: true, error: null });
-      const { data, error } = await supabase
-        .from('affiliates')
-        .select('*')
-        .order('name');
-
-      if (error) throw error;
-      set({ affiliates: data || [], isLoading: false });
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        set({ error: error.message, isLoading: false });
-      } else {
-        set({ error: String(error), isLoading: false });
-      }
-    }
+    set({ isLoading: true });
+    const { data, error } = await supabase.from('affiliates').select('*');
+    set({ affiliates: data || [], isLoading: false, error: error?.message || null });
   },
 
   addAffiliate: async (affiliate) => {
@@ -88,55 +75,16 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
     }
   },
 
-  deleteAffiliate: async (id) => {
-    try {
-      set({ isLoading: true, error: null });
-
-      // Verifica si el afiliado existe
-      const affiliate = get().affiliates.find(a => a.id === id);
-      if (!affiliate) {
-        throw new Error('Afiliado no encontrado');
-      }
-
-      // Elimina la foto del afiliado si existe
-      if (affiliate.photo_url) {
-        const photoPath = affiliate.photo_url.split('/').pop();
-        if (photoPath) {
-          const { error: storageError } = await supabase.storage
-            .from('affiliates')
-            .remove([`affiliate-photos/${photoPath}`]);
-
-          if (storageError) {
-            console.error('Error al eliminar la foto:', storageError);
-            throw storageError;
-          }
-        }
-      }
-
-      // Elimina el registro del afiliado
-      const { error } = await supabase
-        .from('affiliates')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error al eliminar el afiliado:', error);
-        throw error;
-      }
-
-      // Actualiza el estado local
-      const affiliates = get().affiliates.filter(a => a.id !== id);
-      set({ affiliates, isLoading: false });
-      console.log('Afiliado eliminado con éxito:', id);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error('Error en deleteAffiliate:', error.message);
-        set({ error: error.message, isLoading: false });
-      } else {
-        console.error('Error en deleteAffiliate:', String(error));
-        set({ error: String(error), isLoading: false });
-      }
+  deleteAffiliate: async (id: string) => {
+    set({ isLoading: true });
+    const { error } = await supabase.from('affiliates').delete().eq('id', id);
+    if (error) {
+      set({ error: error.message, isLoading: false });
+      throw new Error(error.message);
     }
+    // Refresca la lista después de borrar
+    await get().fetchAffiliates();
+    set({ isLoading: false });
   },
 
   uploadPhoto: async (file) => {
@@ -179,6 +127,3 @@ export const deleteAffiliate = async (id: string) => {
     throw new Error('Error al eliminar el afiliado');
   }
 };
-
-// Removed unused useState import to resolve the error
-// Removed unused handleDelete function to resolve the error
