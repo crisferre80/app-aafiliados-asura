@@ -26,7 +26,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
     try {
       const constraints = useBackCamera
         ? { video: { facingMode: { exact: "environment" } } }
-        : { video: true };
+        : { video: { facingMode: "user" } };
       const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       setStream(mediaStream);
       setUsingBackCamera(useBackCamera);
@@ -41,6 +41,11 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   const switchToBackCamera = async () => {
     closeCamera();
     await openCamera(true);
+  };
+
+  const switchToFrontCamera = async () => {
+    closeCamera();
+    await openCamera(false);
   };
 
   const closeCamera = () => {
@@ -105,24 +110,35 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                   playsInline
                   className="w-full max-w-md rounded-lg shadow-lg mb-4"
                 />
-                <button
-                  onClick={capturePhoto}
-                  className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2 mb-2"
-                >
-                  <Camera size={20} /> Tomar Foto
-                </button>
+                <div className="flex flex-row gap-2 mb-2">
+                  <button
+                    onClick={capturePhoto}
+                    className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
+                  >
+                    <Camera size={20} /> Tomar Foto
+                  </button>
+                  {!usingBackCamera && (
+                    <button
+                      onClick={switchToBackCamera}
+                      className="bg-gray-700 text-white px-4 py-2 rounded flex items-center gap-2"
+                    >
+                      Cambiar a Cámara Trasera
+                    </button>
+                  )}
+                  {usingBackCamera && (
+                    <button
+                      onClick={switchToFrontCamera}
+                      className="bg-gray-700 text-white px-4 py-2 rounded flex items-center gap-2"
+                    >
+                      Cambiar a Cámara Frontal
+                    </button>
+                  )}
+                </div>
                 <button
                   onClick={closeCamera}
                   className="text-gray-600 underline text-sm"
                 >
                   Cancelar
-                </button>
-                <button
-                  onClick={() => switchToBackCamera()}
-                  className="bg-gray-700 text-white px-4 py-2 rounded flex items-center gap-2 mt-2"
-                  disabled={usingBackCamera}
-                >
-                  Cambiar a Cámara Trasera
                 </button>
               </div>
             ) : (
