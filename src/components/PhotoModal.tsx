@@ -22,19 +22,31 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   // Removed unused usingBackCamera state
 
-  const openCamera = async (useBackCamera = false) => {
+  const openCamera = async (useBackCamera: boolean = false) => {
     try {
-      const constraints = useBackCamera
-        ? { video: { facingMode: { exact: "environment" } } }
-        : { video: { facingMode: "user" } };
+      // Intenta abrir la cámara trasera si se solicita, de lo contrario la frontal o cualquier disponible
+      const constraints =
+        useBackCamera
+          ? { video: { facingMode: { exact: "environment" } } }
+          : { video: { facingMode: "user" } };
       const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       setStream(mediaStream);
-      // setUsingBackCamera(useBackCamera); // Removed unused state update
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
     } catch {
-      alert("No se pudo acceder a la cámara.");
+      // Si falla, usa cualquier cámara disponible
+      try {
+        const fallbackStream = await navigator.mediaDevices.getUserMedia({
+          video: true
+        });
+        setStream(fallbackStream);
+        if (videoRef.current) {
+          videoRef.current.srcObject = fallbackStream;
+        }
+      } catch {
+        alert("No se pudo acceder a la cámara.");
+      }
     }
   };
 
