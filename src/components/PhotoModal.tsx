@@ -117,14 +117,13 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                 >
                   Cancelar
                 </button>
-                {!usingBackCamera && (
-                  <button
-                    onClick={switchToBackCamera}
-                    className="bg-gray-700 text-white px-4 py-2 rounded flex items-center gap-2 mt-2"
-                  >
-                    Cambiar a Cámara Trasera
-                  </button>
-                )}
+                <button
+                  onClick={() => switchToBackCamera()}
+                  className="bg-gray-700 text-white px-4 py-2 rounded flex items-center gap-2 mt-2"
+                  disabled={usingBackCamera}
+                >
+                  Cambiar a Cámara Trasera
+                </button>
               </div>
             ) : (
               <img
