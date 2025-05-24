@@ -20,30 +20,27 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const [usingBackCamera, setUsingBackCamera] = useState(false);
 
-  const openCamera = async () => {
+  const openCamera = async (useBackCamera = false) => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { exact: "environment" } }
-      });
+      const constraints = useBackCamera
+        ? { video: { facingMode: { exact: "environment" } } }
+        : { video: true };
+      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       setStream(mediaStream);
+      setUsingBackCamera(useBackCamera);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
     } catch {
-      // Fallback a la cámara frontal si la trasera no está disponible
-      try {
-        const fallbackStream = await navigator.mediaDevices.getUserMedia({
-          video: true
-        });
-        setStream(fallbackStream);
-        if (videoRef.current) {
-          videoRef.current.srcObject = fallbackStream;
-        }
-      } catch {
-        alert("No se pudo acceder a la cámara.");
-      }
+      alert("No se pudo acceder a la cámara.");
     }
+  };
+
+  const switchToBackCamera = async () => {
+    closeCamera();
+    await openCamera(true);
   };
 
   const closeCamera = () => {
@@ -52,6 +49,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       setStream(null);
     }
     setCapturedPhoto(null);
+    setUsingBackCamera(false);
   };
 
   const capturePhoto = () => {
@@ -69,7 +67,6 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
     }
   };
 
-  // Cierra la cámara al cerrar el modal
   React.useEffect(() => {
     if (!isOpen) closeCamera();
     // eslint-disable-next-line
@@ -120,6 +117,14 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                 >
                   Cancelar
                 </button>
+                {!usingBackCamera && (
+                  <button
+                    onClick={switchToBackCamera}
+                    className="bg-gray-700 text-white px-4 py-2 rounded flex items-center gap-2 mt-2"
+                  >
+                    Cambiar a Cámara Trasera
+                  </button>
+                )}
               </div>
             ) : (
               <img
@@ -130,7 +135,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             )}
             {!stream && !capturedPhoto && (
               <button
-                onClick={openCamera}
+                onClick={() => openCamera(false)}
                 className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 mt-2"
               >
                 <Camera size={20} /> Usar cámara
