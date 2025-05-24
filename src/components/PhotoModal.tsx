@@ -17,6 +17,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   name,
   documentId
 }) => {
+
+
   return (
     <Modal
       isOpen={isOpen}

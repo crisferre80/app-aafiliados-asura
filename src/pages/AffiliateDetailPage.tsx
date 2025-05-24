@@ -140,12 +140,14 @@ const AffiliateDetailPage: React.FC = () => {
       const [yearStr, monthStr] = dueDate.split('-');
       const monthKey = `${yearStr}-${monthStr}`;
       if (!existingDueMonths.includes(monthKey)) {
-        await createPayment({
-          profile_id: affiliate.id,
-          due_date: dueDate,
-          amount: 7000,
-          status: 'pending',
-        });
+        if (typeof createPayment === 'function') {
+          await createPayment({
+            profile_id: affiliate.id,
+            due_date: dueDate,
+            amount: 7000,
+            status: 'pending',
+          });
+        }
       }
     }
   }, [affiliate, createPayment, payments]);
