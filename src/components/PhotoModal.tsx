@@ -20,7 +20,6 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
-  // Removed unused usingBackCamera state
 
   const openCamera = async (useBackCamera: boolean = false) => {
     try {
@@ -50,23 +49,12 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
     }
   };
 
-  const switchToBackCamera = async () => {
-    closeCamera();
-    await openCamera(true);
-  };
-
-  const switchToFrontCamera = async () => {
-    closeCamera();
-    await openCamera(false);
-  };
-
   const closeCamera = () => {
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
     }
     setCapturedPhoto(null);
-    // setUsingBackCamera(false); // Removed unused state update
   };
 
   const capturePhoto = () => {
@@ -128,18 +116,6 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                     className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
                   >
                     <Camera size={20} /> Tomar Foto
-                  </button>
-                  <button
-                    onClick={switchToBackCamera}
-                    className="bg-gray-700 text-white px-4 py-2 rounded flex items-center gap-2"
-                  >
-                    Cámara Trasera
-                  </button>
-                  <button
-                    onClick={switchToFrontCamera}
-                    className="bg-gray-700 text-white px-4 py-2 rounded flex items-center gap-2"
-                  >
-                    Cámara Frontal
                   </button>
                 </div>
                 <button
