@@ -6,7 +6,7 @@ import Input from '../components/Input';
 import TextArea from '../components/TextArea';
 import Button from '../components/Button';
 import PhotoUpload from '../components/PhotoUpload';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react'; // Asegúrate de importar los íconos
 
 const allowedMaritalStatuses = ["single", "married", "divorced", "widowed", "domestic_partnership"] as const;
 type MaritalStatus = typeof allowedMaritalStatuses[number];
@@ -299,7 +299,6 @@ const AffiliateFormPage: React.FC = () => {
                 onPhotoCapture={handlePhotoCapture}
                 currentPhotoUrl={photoUrl}
               />
-              
               <div className="flex items-center">
                 <input
                   id="active"

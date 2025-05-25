@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Upload, X } from 'lucide-react';
+import { Camera, Upload, X, RefreshCcw } from 'lucide-react';
 import Webcam from 'react-webcam';
 import Button from './Button';
 
@@ -148,6 +148,16 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
           Cámara Trasera
         </Button>
       </div>
+
+      <button
+        type="button"
+        onClick={() => setCameraType(prev => prev === 'user' ? 'environment' : 'user')}
+        className="flex items-center gap-2 px-3 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 transition-colors mb-2"
+        title={`Cambiar a cámara ${cameraType === 'user' ? 'trasera' : 'frontal'}`}
+      >
+        <RefreshCcw size={18} />
+        {cameraType === 'user' ? 'Frontal' : 'Trasera'}
+      </button>
     </div>
   );
 };
