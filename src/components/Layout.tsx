@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, Home, Users, Calendar, LogOut, FileText, UserCog } from 'lucide-react';
+import { Menu, X, Home, Users, Calendar, LogOut, FileText, UserCog, Download } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import NotificationBell from './NotificationBell';
 
@@ -84,6 +84,15 @@ const Layout: React.FC = () => {
               <UserCog size={20} />
               <span>Comisión Directiva</span>
             </NavLink>
+            <NavLink 
+              to="/descargas"
+              className={({ isActive }) =>
+                `flex items-center space-x-1 hover:text-green-200 transition-colors ${isActive ? 'font-semibold' : ''}`
+              }
+            >
+              <Download size={20} />
+              <span>Descargas</span>
+            </NavLink>
             <NotificationBell />
             <button
               onClick={handleSignOut}
@@ -149,6 +158,16 @@ const Layout: React.FC = () => {
             >
               <UserCog size={20} />
               <span>Comisión Directiva</span>
+            </NavLink>
+            <NavLink
+              to="/descargas"
+              className={({ isActive }) =>
+                `flex items-center space-x-2 px-4 py-3 hover:bg-green-700 transition-colors ${isActive ? 'font-semibold bg-green-700' : ''}`
+              }
+              onClick={closeMenu}
+            >
+              <Download size={20} />
+              <span>Descargas</span>
             </NavLink>
             <button
               onClick={() => {

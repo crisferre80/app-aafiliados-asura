@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore, initializeAuth } from './store/authStore';
+import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -16,6 +17,7 @@ import MembershipCardPage from './pages/MembershipCardPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AffiliateCredential from './pages/AffiliateCredential';
 import ComisionDirectivaPage from './pages/ComisionDirectivaPage';
+import Descargas from './pages/Descargas';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuthStore();
@@ -37,45 +39,49 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/card/:id" element={<MembershipCardPage />} />
+    <>
+      <Toaster position="top-right" />
+      <Router>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/card/:id" element={<MembershipCardPage />} />
 
-        <Route
-          path="/"
-          element={
-            <PrivateRoute>
-              <Layout />
-            </PrivateRoute>
-          }
-        >
-          <Route index element={<DashboardPage />} />
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <Layout />
+              </PrivateRoute>
+            }
+          >
+            <Route index element={<DashboardPage />} />
 
-          <Route path="affiliates">
-            <Route index element={<AffiliatesPage />} />
-            <Route path="new" element={<AffiliateFormPage />} />
-            <Route path=":id" element={<AffiliateDetailPage />} />
-            <Route path=":id/edit" element={<AffiliateFormPage />} />
-            <Route path=":id/credential" element={<AffiliateCredential />} />
+            <Route path="affiliates">
+              <Route index element={<AffiliatesPage />} />
+              <Route path="new" element={<AffiliateFormPage />} />
+              <Route path=":id" element={<AffiliateDetailPage />} />
+              <Route path=":id/edit" element={<AffiliateFormPage />} />
+              <Route path=":id/credential" element={<AffiliateCredential />} />
+            </Route>
+
+            <Route path="payments" element={<PaymentsControlPage />} />
+
+            <Route path="activities">
+              <Route index element={<ActivitiesPage />} />
+              <Route path="new" element={<ActivityFormPage />} />
+              <Route path=":id" element={<ActivityDetailPage />} />
+              <Route path=":id/edit" element={<ActivityFormPage />} />
+            </Route>
+
+            <Route path="/comision-directiva" element={<ComisionDirectivaPage />} />
+            <Route path="descargas" element={<Descargas />} />
           </Route>
 
-          <Route path="payments" element={<PaymentsControlPage />} />
-
-          <Route path="activities">
-            <Route index element={<ActivitiesPage />} />
-            <Route path="new" element={<ActivityFormPage />} />
-            <Route path=":id" element={<ActivityDetailPage />} />
-            <Route path=":id/edit" element={<ActivityFormPage />} />
-          </Route>
-
-          <Route path="/comision-directiva" element={<ComisionDirectivaPage />} />
-        </Route>
-
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </Router>
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Router>
+    </>
   );
 }
 

@@ -7,6 +7,7 @@ import TextArea from '../components/TextArea';
 import Button from '../components/Button';
 import PhotoUpload from '../components/PhotoUpload';
 import { ArrowLeft, Save } from 'lucide-react'; // Importa el icono de intercambio
+import toast from 'react-hot-toast';
 
 const allowedMaritalStatuses = ["single", "married", "divorced", "widowed", "domestic_partnership"] as const;
 type MaritalStatus = typeof allowedMaritalStatuses[number];
@@ -79,6 +80,13 @@ const AffiliateFormPage: React.FC = () => {
   // Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Nuevo estado para el departamento
+  const [department, setDepartment] = useState('');
+
+  // Nuevos estados para la empresa y cargo
+  const [company, setCompany] = useState('');
+  const [position, setPosition] = useState('');
+
   // Estado para el tipo de cámara
 
   useEffect(() => {
@@ -117,6 +125,9 @@ const AffiliateFormPage: React.FC = () => {
         setCollectionMonthlyIncome(affiliate.collection_monthly_income !== null && affiliate.collection_monthly_income !== undefined ? affiliate.collection_monthly_income.toString() : '');
         setHasSocialBenefits(affiliate.has_social_benefits || false);
         setSocialBenefitsDetails(Array.isArray(affiliate.social_benefits_details) ? affiliate.social_benefits_details.join(', ') : '');
+        setDepartment(affiliate.department || ''); // Nuevo campo
+        setCompany(affiliate.company || ''); // Nuevo campo
+        setPosition(affiliate.position || ''); // Nuevo campo
       } else {
         navigate('/affiliates');
       }
@@ -198,15 +209,20 @@ const AffiliateFormPage: React.FC = () => {
       has_social_benefits: hasSocialBenefits,
       social_benefits_details: socialBenefitsDetails
         ? socialBenefitsDetails.split(',').map(s => s.trim()).filter(Boolean)
-        : []
+        : [],
+      department,
+      company,
+      position
     };
 
     if (isEditMode && id) {
       await updateAffiliate(id, affiliateData);
+      toast.success('Afiliado de ASURA actualizado correctamente');
       navigate(`/affiliates/${id}`);
     } else {
       const newId = await addAffiliate(affiliateData);
       if (newId) {
+        toast.success('Afiliado de ASURA guardado correctamente');
         navigate(`/affiliates/${newId}`);
       }
     }
@@ -278,7 +294,66 @@ const AffiliateFormPage: React.FC = () => {
                 error={errors.address}
                 required
               />
-              
+
+              {/* Nuevo campo: Departamento de Santiago del Estero */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Departamento (Santiago del Estero)
+                </label>
+                <select
+                  value={department}
+                  onChange={e => setDepartment(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                  required
+                >
+                  <option value="">Seleccionar...</option>
+                  <option value="Capital">Capital</option>
+                  <option value="Banda">Banda</option>
+                  <option value="Aguirre">Aguirre</option>
+                  <option value="Alberdi">Alberdi</option>
+                  <option value="Atamisqui">Atamisqui</option>
+                  <option value="Avellaneda">Avellaneda</option>
+                  <option value="Belgrano">Belgrano</option>
+                  <option value="Copo">Copo</option>
+                  <option value="Choya">Choya</option>
+                  <option value="Figueroa">Figueroa</option>
+                  <option value="General Taboada">General Taboada</option>
+                  <option value="Guasayán">Guasayán</option>
+                  <option value="Jiménez">Jiménez</option>
+                  <option value="Juan Felipe Ibarra">Juan Felipe Ibarra</option>
+                  <option value="Loreto">Loreto</option>
+                  <option value="Mitre">Mitre</option>
+                  <option value="Moreno">Moreno</option>
+                  <option value="Ojo de Agua">Ojo de Agua</option>
+                  <option value="Pellegrini">Pellegrini</option>
+                  <option value="Quebrachos">Quebrachos</option>
+                  <option value="Río Hondo">Río Hondo</option>
+                  <option value="Rivadavia">Rivadavia</option>
+                  <option value="Robles">Robles</option>
+                  <option value="Salavina">Salavina</option>
+                  <option value="San Martín">San Martín</option>
+                  <option value="Sarmiento">Sarmiento</option>
+                  <option value="Silípica">Silípica</option>
+                  <option value="Other">Otro</option>
+                </select>
+              </div>
+
+              {/* Nuevo campo: Empresa donde trabaja */}
+              <Input
+                id="company"
+                label="Empresa donde trabaja"
+                value={company}
+                onChange={e => setCompany(e.target.value)}
+              />
+
+              {/* Nuevo campo: Cargo que ocupa */}
+              <Input
+                id="position"
+                label="Cargo que ocupa"
+                value={position}
+                onChange={e => setPosition(e.target.value)}
+              />
+
               <Input
                 id="birthDate"
                 label="Fecha de Nacimiento"

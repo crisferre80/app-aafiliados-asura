@@ -1,4 +1,7 @@
 export interface Affiliate {
+  position: string;
+  company: string;
+  department: string;
   id: string;
   name: string;
   document_id: string;
