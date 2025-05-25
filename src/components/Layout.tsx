@@ -1,6 +1,6 @@
 import React from 'react';
-import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
-import { Menu, X, Home, Users, Calendar, LogOut, FileText } from 'lucide-react';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Menu, X, Home, Users, Calendar, LogOut, FileText, UserCog } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import NotificationBell from './NotificationBell';
 
@@ -75,6 +75,15 @@ const Layout: React.FC = () => {
               <Calendar size={20} />
               <span>Actividades</span>
             </NavLink>
+            <NavLink 
+              to="/comision-directiva"
+              className={({ isActive }) =>
+                `flex items-center space-x-1 hover:text-green-200 transition-colors ${isActive ? 'font-semibold' : ''}`
+              }
+            >
+              <UserCog size={20} />
+              <span>Comisión Directiva</span>
+            </NavLink>
             <NotificationBell />
             <button
               onClick={handleSignOut}
@@ -131,12 +140,16 @@ const Layout: React.FC = () => {
               <Calendar size={20} />
               <span>Actividades</span>
             </NavLink>
-            <Link
+            <NavLink
               to="/comision-directiva"
-              className="px-4 py-2 hover:bg-gray-100 rounded transition"
+              className={({ isActive }) =>
+                `flex items-center space-x-2 px-4 py-3 hover:bg-green-700 transition-colors ${isActive ? 'font-semibold bg-green-700' : ''}`
+              }
+              onClick={closeMenu}
             >
-              Comisión Directiva
-            </Link>
+              <UserCog size={20} />
+              <span>Comisión Directiva</span>
+            </NavLink>
             <button
               onClick={() => {
                 handleSignOut();

@@ -201,31 +201,35 @@ const ComisionDirectivaPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-8 p-6 bg-white rounded shadow">
-      <h1 className="text-2xl font-bold mb-4 text-center">Comisión Directiva</h1>
-      <button
-        className="mb-6 bg-blue-600 text-white px-4 py-2 rounded font-semibold"
-        onClick={() => setAgregando(a => !a)}
-      >
-        {agregando ? 'Cancelar' : 'Crear nuevo'}
-      </button>
+    <div className="max-w-4xl mx-auto mt-10 p-8 bg-white rounded-2xl shadow-lg">
+      <h1 className="text-3xl font-extrabold mb-8 text-center text-blue-800 tracking-tight drop-shadow">
+        Comisión Directiva
+      </h1>
+      <div className="flex justify-center mb-8">
+        <button
+          className={`transition-all duration-200 mb-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold shadow ${agregando ? 'scale-95' : 'scale-100'}`}
+          onClick={() => setAgregando(a => !a)}
+        >
+          {agregando ? 'Cancelar' : 'Crear nuevo'}
+        </button>
+      </div>
       {agregando && (
-        <div className="mb-6 p-4 border rounded bg-gray-50">
-          <div className="mb-2">
-            <label className="block text-sm">Nombre:</label>
+        <div className="mb-8 p-6 border rounded-xl bg-blue-50 shadow-inner max-w-md mx-auto animate-fade-in">
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-blue-900">Nombre:</label>
             <input
               type="text"
               value={nuevoNombre}
               onChange={e => setNuevoNombre(e.target.value)}
-              className="border rounded px-2 py-1 w-full"
+              className="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-300"
             />
           </div>
-          <div className="mb-2">
-            <label className="block text-sm">Cargo:</label>
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-blue-900">Cargo:</label>
             <select
               value={nuevoCargo}
               onChange={e => setNuevoCargo(e.target.value)}
-              className="border rounded px-2 py-1 w-full"
+              className="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-300"
             >
               <option value="">Seleccionar cargo</option>
               {cargos.map(cargo => (
@@ -233,8 +237,8 @@ const ComisionDirectivaPage: React.FC = () => {
               ))}
             </select>
           </div>
-          <div className="mb-2">
-            <label className="block text-sm">Foto:</label>
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-blue-900">Foto:</label>
             <input
               type="file"
               accept="image/*"
@@ -244,80 +248,91 @@ const ComisionDirectivaPage: React.FC = () => {
           </div>
           <button
             onClick={handleCrearNuevo}
-            className="bg-green-600 text-white px-4 py-2 rounded mt-2"
+            className="bg-green-600 hover:bg-green-700 transition text-white px-6 py-2 rounded-lg mt-2 font-semibold shadow"
             disabled={guardandoNuevo}
           >
             {guardandoNuevo ? 'Guardando...' : 'Guardar'}
           </button>
         </div>
       )}
-      <ul className="divide-y">
+      <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
         {comision.map((miembro, idx) => (
-          <li key={miembro.id} className="py-4 flex items-center gap-4">
-            <img
-              src={miembro.foto_url || '/default-avatar.png'}
-              alt={miembro.nombre}
-              className="w-16 h-16 rounded-full object-cover border border-gray-300"
-              onError={e =>
-                (e.currentTarget.src =
-                  'https://ui-avatars.com/api/?name=' +
-                  encodeURIComponent(miembro.nombre))
-              }
-            />
-            <div className="flex-1">
+          <li
+            key={miembro.id}
+            className={`group bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-lg p-6 flex flex-col items-center transition-all duration-200 hover:scale-105 hover:shadow-2xl border border-transparent hover:border-blue-300`}
+          >
+            <div className="relative">
+              <img
+                src={miembro.foto_url || '/default-avatar.png'}
+                alt={miembro.nombre}
+                className="w-32 h-32 rounded-full object-cover border-4 border-blue-200 shadow-md transition-all duration-200 group-hover:border-blue-500 group-hover:shadow-xl"
+                onError={e =>
+                  (e.currentTarget.src =
+                    'https://ui-avatars.com/api/?name=' +
+                    encodeURIComponent(miembro.nombre))
+                }
+              />
+              <label className="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-2 cursor-pointer shadow-lg opacity-80 hover:opacity-100 transition-opacity text-xs flex items-center justify-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={loadingIdx === idx}
+                  onChange={e => handleFotoChange(e, idx)}
+                />
+                {/* Icono de cámara SVG */}
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553.378A2 2 0 0122 12.368V17a2 2 0 01-2 2H4a2 2 0 01-2-2v-4.632a2 2 0 012.447-1.99L9 10m6 0V7a2 2 0 00-2-2h-2a2 2 0 00-2 2v3m6 0H9" />
+                  <circle cx="12" cy="14" r="3" />
+                </svg>
+                {loadingIdx === idx && (
+                  <span className="ml-1 animate-pulse">Subiendo...</span>
+                )}
+              </label>
+            </div>
+            <div className="mt-5 w-full text-center">
               {editIdx === idx ? (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 items-center">
                   <input
                     type="text"
                     value={editNombre}
                     onChange={handleNombreChange}
-                    className="border rounded px-2 py-1 text-sm"
+                    className="border rounded px-2 py-1 text-sm w-4/5 focus:ring-2 focus:ring-blue-300"
                   />
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 justify-center">
                     <button
                       onClick={() => handleNombreSave(idx)}
-                      className="bg-green-600 text-white px-2 py-1 rounded text-xs"
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-semibold transition"
                     >
                       Guardar
                     </button>
                     <button
                       onClick={handleNombreCancel}
-                      className="bg-gray-400 text-white px-2 py-1 rounded text-xs"
+                      className="bg-gray-400 hover:bg-gray-500 text-white px-3 py-1 rounded text-xs font-semibold transition"
                     >
                       Cancelar
                     </button>
                   </div>
                 </div>
               ) : (
-                <span className="block font-medium">
-                  {miembro.nombre}{' '}
-                  <button
-                    onClick={() => handleEditNombre(idx)}
-                    className="ml-2 text-blue-600 text-xs underline"
-                  >
-                    Editar
-                  </button>
-                </span>
+                <div>
+                  <span className="block font-bold text-lg text-blue-900 group-hover:text-blue-700 transition">
+                    {miembro.nombre}
+                    <button
+                      onClick={() => handleEditNombre(idx)}
+                      className="ml-2 text-blue-500 hover:text-blue-700 text-xs underline transition"
+                    >
+                      Editar
+                    </button>
+                  </span>
+                </div>
               )}
-              <span className="block text-gray-600 text-sm">{miembro.cargo}</span>
-              <label className="block mt-2 text-xs text-gray-500">
-                Cambiar foto:
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="block mt-1"
-                  disabled={loadingIdx === idx}
-                  onChange={e => handleFotoChange(e, idx)}
-                />
-                {loadingIdx === idx && (
-                  <span className="text-blue-600 ml-2">Subiendo...</span>
-                )}
-              </label>
+              <span className="block text-blue-700 text-sm font-medium mt-1">{miembro.cargo}</span>
             </div>
           </li>
         ))}
       </ul>
-      <p className="text-xs text-gray-400 mt-4">
+      <p className="text-xs text-gray-400 mt-8 text-center">
         * Los cambios se guardan en la base de datos.
       </p>
     </div>
