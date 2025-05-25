@@ -4,7 +4,7 @@ import Webcam from 'react-webcam';
 import Button from './Button';
 
 interface PhotoUploadProps {
-  onPhotoCapture: (photoFile: File) => void;
+  onPhotoCapture: (photoFile: File, cameraType: 'user' | 'environment') => void;
   currentPhotoUrl?: string | null;
 }
 
@@ -14,6 +14,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
 }) => {
   const [showCamera, setShowCamera] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(currentPhotoUrl || null);
+  const [cameraType, setCameraType] = useState<'user' | 'environment'>('user');
   const webcamRef = useRef<Webcam>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -29,18 +30,18 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
           .then(res => res.blob())
           .then(blob => {
             const file = new File([blob], "camera-capture.jpg", { type: "image/jpeg" });
-            onPhotoCapture(file);
+            onPhotoCapture(file, cameraType);
           });
       }
     }
-  }, [webcamRef, onPhotoCapture]);
+  }, [webcamRef, onPhotoCapture, cameraType]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const objectUrl = URL.createObjectURL(file);
       setPhotoPreview(objectUrl);
-      onPhotoCapture(file);
+      onPhotoCapture(file, cameraType);
       
       // Clean up
       return () => URL.revokeObjectURL(objectUrl);
@@ -84,7 +85,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
             audio={false}
             ref={webcamRef}
             screenshotFormat="image/jpeg"
-            videoConstraints={{ facingMode: "user" }}
+            videoConstraints={{ facingMode: cameraType }}
             className="w-full max-w-md rounded-lg border border-gray-300 mb-2"
           />
           <div className="flex space-x-2">
@@ -131,6 +132,22 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
           />
         </div>
       )}
+
+      <div className="mt-4">
+        <Button 
+          onClick={() => setCameraType('user')}
+          variant={cameraType === 'user' ? 'primary' : 'outline'}
+          className="mr-2"
+        >
+          Cámara Frontal
+        </Button>
+        <Button 
+          onClick={() => setCameraType('environment')}
+          variant={cameraType === 'environment' ? 'primary' : 'outline'}
+        >
+          Cámara Trasera
+        </Button>
+      </div>
     </div>
   );
 };

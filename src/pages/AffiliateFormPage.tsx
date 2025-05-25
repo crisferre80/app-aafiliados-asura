@@ -144,10 +144,12 @@ const AffiliateFormPage: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Cambia la firma para aceptar el tipo de cámara
   const handlePhotoCapture = (file: File) => {
     setNewPhotoFile(file);
     setPhotoChanged(true);
-  };
+    // Puedes guardar el tipo de cámara si lo necesitas en el estado
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
