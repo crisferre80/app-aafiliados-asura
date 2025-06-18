@@ -5,12 +5,25 @@ import { useAuthStore } from '../store/authStore';
 
 const Layout: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [selectedProvince, setSelectedProvince] = React.useState('');
   const { signOut } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/login');
+  };
+
+  const provinces = [
+    'Buenos Aires', 'Córdoba', 'Santa Fe', 'Mendoza', 'Tucumán', 'Entre Ríos', 'Salta', 'Chaco', 'Misiones', 'Corrientes',
+    'San Juan', 'Jujuy', 'Río Negro', 'Formosa', 'Neuquén', 'San Luis', 'La Rioja', 'Catamarca', 'La Pampa', 'Santa Cruz',
+    'Chubut', 'Tierra del Fuego', 'Santiago del Estero' // Agregada la provincia
+  ];
+
+  const handleProvinceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedProvince(event.target.value);
+    // Aquí podrías agregar lógica para filtrar afiliados por provincia
+    console.log(`Provincia seleccionada: ${event.target.value}`);
   };
 
   return (
@@ -22,6 +35,21 @@ const Layout: React.FC = () => {
             <img src="https://res.cloudinary.com/dhvrrxejo/image/upload/v1744998417/asura_logo_alfa_1_ct0uis.png" alt="ASURA Logo" className="h-10 w-10 rounded-full bg-white p-1" />
             <img src="https://res.cloudinary.com/dhvrrxejo/image/upload/v1744998509/asura_santiago_logo_sj53rh.jpg" alt="Asura logo2" className="h-12 w-17 full bg-white p-0.2" />
             <h1 className="text-xl font-bold">ASURA APP</h1>
+          </div>
+          {/* Selector de Provincia */}
+          <div className="ml-4">
+            <label htmlFor="province-selector" className="text-sm font-medium mr-2 text-white">Provincia:</label>
+            <select
+              id="province-selector"
+              value={selectedProvince}
+              onChange={handleProvinceChange}
+              className="p-2 rounded border border-gray-300 bg-green-100 text-green-800 focus:outline-none focus:ring-2 focus:ring-green-600 hover:bg-green-200"
+            >
+              <option value="">Seleccionar...</option>
+              {provinces.map((province) => (
+                <option key={province} value={province}>{province}</option>
+              ))}
+            </select>
           </div>
           {/* Botón MENU en la barra de navegación */}
           <div className="relative">

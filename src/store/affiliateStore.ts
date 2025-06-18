@@ -6,7 +6,7 @@ interface AffiliateState {
   affiliates: Affiliate[];
   isLoading: boolean;
   error: string | null;
-  fetchAffiliates: () => Promise<void>;
+  fetchAffiliates: (province?: string) => Promise<void>;
   addAffiliate: (affiliate: Omit<Affiliate, 'id' | 'created_at'>) => Promise<string | null>;
   updateAffiliate: (id: string, updates: Partial<Affiliate>) => Promise<void>;
   deleteAffiliate: (id: string) => Promise<void>;
@@ -18,9 +18,13 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  fetchAffiliates: async () => {
+  fetchAffiliates: async (province = 'Santiago del Estero') => {
     set({ isLoading: true });
-    const { data, error } = await supabase.from('affiliates').select('*');
+    const { data, error } = await supabase
+      .from('affiliates')
+      .select('*')
+      .eq('province', province);
+
     set({ affiliates: data || [], isLoading: false, error: error?.message || null });
   },
 
@@ -29,7 +33,7 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
       set({ isLoading: true, error: null });
       const { data, error } = await supabase
         .from('affiliates')
-        .insert([affiliate])
+        .insert([{ ...affiliate, province: 'Santiago del Estero' }])
         .select();
 
       if (error) throw error;
@@ -114,7 +118,7 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
       }
       return null;
     }
-  }
+  },
 }));
 
 // En affiliateStore.ts o donde manejes las solicitudes al backend
