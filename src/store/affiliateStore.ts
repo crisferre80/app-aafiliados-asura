@@ -19,7 +19,11 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
   error: null,
 
   fetchAffiliates: async (province = 'Santiago del Estero') => {
-    set({ isLoading: true });
+    set({ isLoading: true, affiliates: [] }); // Limpiar afiliados antes de cada fetch
+    if (!province || province === '') {
+      set({ affiliates: [], isLoading: false, error: null });
+      return;
+    }
     const { data, error } = await supabase
       .from('affiliates')
       .select('*')

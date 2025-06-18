@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAffiliateStore } from '../store/affiliateStore';
 import Card, { CardHeader, CardBody, CardFooter } from '../components/Card';
@@ -8,6 +8,7 @@ import Button from '../components/Button';
 import PhotoUpload from '../components/PhotoUpload';
 import { ArrowLeft, Save } from 'lucide-react'; // Importa el icono de intercambio
 import toast from 'react-hot-toast';
+import { ProvinceContext } from '../components/Layout';
 
 const allowedMaritalStatuses = ["single", "married", "divorced", "widowed", "domestic_partnership"] as const;
 type MaritalStatus = typeof allowedMaritalStatuses[number];
@@ -33,6 +34,7 @@ const AffiliateFormPage: React.FC = () => {
   const isEditMode = !!id;
 
   const { affiliates, addAffiliate, updateAffiliate, uploadPhoto, isLoading, fetchAffiliates } = useAffiliateStore();
+  const { selectedProvince, setSelectedProvince } = useContext(ProvinceContext);
 
   // Basic Information
   const [name, setName] = useState('');
@@ -87,7 +89,44 @@ const AffiliateFormPage: React.FC = () => {
   const [company, setCompany] = useState('');
   const [position, setPosition] = useState('');
 
-  // Estado para el tipo de cámara
+  // Estado para la provincia
+  const [province, setProvince] = useState(selectedProvince || 'Santiago del Estero');
+
+  // Opciones de departamentos/partidos por provincia
+  const departmentOptions: Record<string, string[]> = {
+    'Santiago del Estero': [
+      'Capital', 'Banda', 'Aguirre', 'Alberdi', 'Atamisqui', 'Avellaneda', 'Belgrano', 'Copo', 'Choya', 'Figueroa',
+      'General Taboada', 'Guasayán', 'Jiménez', 'Juan Felipe Ibarra', 'Loreto', 'Mitre', 'Moreno', 'Ojo de Agua',
+      'Pellegrini', 'Quebrachos', 'Río Hondo', 'Rivadavia', 'Robles', 'Salavina', 'San Martín', 'Sarmiento', 'Silípica', 'Otro'
+    ],
+    'Buenos Aires': [
+      'La Plata', 'Avellaneda', 'Quilmes', 'Lomas de Zamora', 'Morón', 'San Isidro', 'San Martín', 'Tres de Febrero', 'Vicente López', 'Lanús', 'General San Martín', 'Florencio Varela', 'Berazategui', 'Almirante Brown', 'Otro'
+    ],
+    'Córdoba': [
+      'Capital', 'Colón', 'Río Cuarto', 'San Justo', 'Punilla', 'General San Martín', 'Unión', 'Tercero Arriba', 'Otro'
+    ],
+    'Santa Fe': [
+      'Rosario', 'La Capital', 'General López', 'San Lorenzo', 'Castellanos', 'San Jerónimo', 'San Martín', 'Otro'
+    ],
+    'Capital Federal': [
+      'Agronomía', 'Almagro', 'Balvanera', 'Barracas', 'Belgrano', 'Boedo', 'Caballito', 'Chacarita', 'Coghlan',
+      'Colegiales', 'Constitución', 'Flores', 'Floresta', 'La Boca', 'La Paternal', 'Liniers', 'Mataderos',
+      'Monserrat', 'Monte Castro', 'Nueva Pompeya', 'Núñez', 'Palermo', 'Parque Avellaneda', 'Parque Chacabuco',
+      'Parque Chas', 'Parque Patricios', 'Puerto Madero', 'Recoleta', 'Retiro', 'Saavedra', 'San Cristóbal',
+      'San Nicolás', 'San Telmo', 'Vélez Sarsfield', 'Versalles', 'Villa Crespo', 'Villa del Parque',
+      'Villa Devoto', 'Villa General Mitre', 'Villa Lugano', 'Villa Luro', 'Villa Ortúzar', 'Villa Pueyrredón',
+      'Villa Real', 'Villa Riachuelo', 'Villa Santa Rita', 'Villa Soldati', 'Villa Urquiza', 'Otro'
+    ],
+    // ...agrega más provincias y sus departamentos/partidos principales...
+    'Otro': ['Otro']
+  };
+
+  // Provincias ordenadas alfabéticamente (incluyendo Capital Federal)
+  const provinceOptions = [
+    'Buenos Aires', 'Córdoba', 'Santa Fe', 'Mendoza', 'Tucumán', 'Entre Ríos', 'Salta', 'Chaco', 'Misiones', 'Corrientes',
+    'San Juan', 'Jujuy', 'Río Negro', 'Formosa', 'Neuquén', 'San Luis', 'La Rioja', 'Catamarca', 'La Pampa', 'Santa Cruz',
+    'Chubut', 'Tierra del Fuego', 'Santiago del Estero', 'Capital Federal'
+  ].sort((a, b) => a.localeCompare(b));
 
   useEffect(() => {
     if (isEditMode && id) {
@@ -128,11 +167,12 @@ const AffiliateFormPage: React.FC = () => {
         setDepartment(affiliate.department || ''); // Nuevo campo
         setCompany(affiliate.company || ''); // Nuevo campo
         setPosition(affiliate.position || ''); // Nuevo campo
+        setProvince(affiliate.province || selectedProvince || 'Santiago del Estero'); // Nuevo campo
       } else {
         navigate('/affiliates');
       }
     }
-  }, [id, affiliates, isEditMode, navigate, fetchAffiliates]);
+  }, [id, affiliates, isEditMode, navigate, fetchAffiliates, selectedProvince]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -212,7 +252,8 @@ const AffiliateFormPage: React.FC = () => {
         : [],
       department,
       company,
-      position
+      position,
+      province,
     };
 
     if (isEditMode && id) {
@@ -295,10 +336,29 @@ const AffiliateFormPage: React.FC = () => {
                 required
               />
 
+              {/* Campo de Provincia */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Provincia</label>
+                <select
+                  value={province}
+                  onChange={e => {
+                    setProvince(e.target.value);
+                    setSelectedProvince(e.target.value);
+                  }}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                  required
+                >
+                  <option value="">Seleccionar...</option>
+                  {provinceOptions.map((prov) => (
+                    <option key={prov} value={prov}>{prov}</option>
+                  ))}
+                </select>
+              </div>
+
               {/* Nuevo campo: Departamento de Santiago del Estero */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Departamento (Santiago del Estero)
+                  Departamento o Partido
                 </label>
                 <select
                   value={department}
@@ -307,34 +367,9 @@ const AffiliateFormPage: React.FC = () => {
                   required
                 >
                   <option value="">Seleccionar...</option>
-                  <option value="Capital">Capital</option>
-                  <option value="Banda">Banda</option>
-                  <option value="Aguirre">Aguirre</option>
-                  <option value="Alberdi">Alberdi</option>
-                  <option value="Atamisqui">Atamisqui</option>
-                  <option value="Avellaneda">Avellaneda</option>
-                  <option value="Belgrano">Belgrano</option>
-                  <option value="Copo">Copo</option>
-                  <option value="Choya">Choya</option>
-                  <option value="Figueroa">Figueroa</option>
-                  <option value="General Taboada">General Taboada</option>
-                  <option value="Guasayán">Guasayán</option>
-                  <option value="Jiménez">Jiménez</option>
-                  <option value="Juan Felipe Ibarra">Juan Felipe Ibarra</option>
-                  <option value="Loreto">Loreto</option>
-                  <option value="Mitre">Mitre</option>
-                  <option value="Moreno">Moreno</option>
-                  <option value="Ojo de Agua">Ojo de Agua</option>
-                  <option value="Pellegrini">Pellegrini</option>
-                  <option value="Quebrachos">Quebrachos</option>
-                  <option value="Río Hondo">Río Hondo</option>
-                  <option value="Rivadavia">Rivadavia</option>
-                  <option value="Robles">Robles</option>
-                  <option value="Salavina">Salavina</option>
-                  <option value="San Martín">San Martín</option>
-                  <option value="Sarmiento">Sarmiento</option>
-                  <option value="Silípica">Silípica</option>
-                  <option value="Other">Otro</option>
+                  {(departmentOptions[province] || departmentOptions['Otro']).map(dep => (
+                    <option key={dep} value={dep}>{dep}</option>
+                  ))}
                 </select>
               </div>
 

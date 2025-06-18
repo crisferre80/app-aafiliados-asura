@@ -11,6 +11,7 @@ interface Affiliate {
   document_id?: string;
   address?: string;
   join_date?: string;
+  province?: string;
   // Add other fields as needed
 }
 
@@ -156,6 +157,9 @@ const AffiliateCredential: React.FC = () => {
           </p>
           <p style={{ margin: '5px 0' }}>
             <strong>Dirección:</strong> {affiliate.address || '—'}
+          </p>
+          <p style={{ margin: '5px 0' }}>
+            <strong>Provincia:</strong> {affiliate.province || '—'}
           </p>
           <p style={{ margin: '5px 0' }}>
             <strong>Fecha de Afiliación:</strong> {affiliate.join_date || '—'}

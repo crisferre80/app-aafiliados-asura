@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { supabase } from '../types/supabase';
+import { ProvinceContext } from '../components/Layout';
 
 const BUCKET = 'comision-fotos';
 
@@ -29,6 +30,7 @@ const cargos = [
 ];
 
 const ComisionDirectivaPage: React.FC = () => {
+  const { selectedProvince } = useContext(ProvinceContext);
   const [comision, setComision] = useState<Miembro[]>([]);
   const [loadingIdx, setLoadingIdx] = useState<number | null>(null);
   const [editIdx, setEditIdx] = useState<number | null>(null);
@@ -40,17 +42,23 @@ const ComisionDirectivaPage: React.FC = () => {
   const [agregando, setAgregando] = useState(false);
   const [guardandoNuevo, setGuardandoNuevo] = useState(false);
 
-  // Cargar datos desde la base de datos
+  // Cargar datos desde la base de datos filtrando por provincia
   useEffect(() => {
+    if (!selectedProvince) {
+      setComision([]);
+      return;
+    }
     const fetchComision = async () => {
       const { data, error } = await supabase
         .from('comision_directiva')
         .select('*')
+        .eq('province', selectedProvince)
         .order('id', { ascending: true });
       if (!error && data) setComision(data);
+      else setComision([]);
     };
     fetchComision();
-  }, []);
+  }, [selectedProvince]);
 
   // Subir foto y actualizar en la base de datos
   const handleFotoChange = async (
@@ -157,7 +165,6 @@ const ComisionDirectivaPage: React.FC = () => {
 
     if (nuevaFoto) {
       const fileExt = nuevaFoto.name.split('.').pop();
-      // Al crear un nuevo integrante:
       const fileName = `${nuevoNombre.replace(/\s/g, '_').toLowerCase()}_${Date.now()}.${fileExt}`;
       const filePath = `comision-fotos/${fileName}`;
       const { error: uploadError } = await supabase.storage.from(BUCKET).upload(filePath, nuevaFoto, {
@@ -173,7 +180,7 @@ const ComisionDirectivaPage: React.FC = () => {
 
     const { data, error } = await supabase
       .from('comision_directiva')
-      .insert([{ nombre: nuevoNombre, cargo: nuevoCargo, foto_url, avatar_path }])
+      .insert([{ nombre: nuevoNombre, cargo: nuevoCargo, foto_url, avatar_path, province: selectedProvince }])
       .select();
 
     if (error) {

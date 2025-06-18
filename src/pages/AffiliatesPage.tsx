@@ -1,30 +1,37 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAffiliateStore } from '../store/affiliateStore';
 import Card, { CardHeader, CardBody } from '../components/Card';
 import Button from '../components/Button';
 import { Search, UserPlus, Filter } from 'lucide-react';
 import type { Affiliate } from '../types/types';
+import { ProvinceContext } from '../components/Layout';
 
 const AffiliatesPage: React.FC = () => {
   const { affiliates, fetchAffiliates, isLoading } = useAffiliateStore();
+  const { selectedProvince } = useContext(ProvinceContext);
   const [searchTerm, setSearchTerm] = useState('');
   const [showOnlyActive, setShowOnlyActive] = useState(true);
   const [filteredAffiliates, setFilteredAffiliates] = useState<Affiliate[]>([]);
   const navigate = useNavigate();
   
   useEffect(() => {
-    fetchAffiliates();
-  }, [fetchAffiliates]);
-  
+    if (selectedProvince && selectedProvince !== '') {
+      fetchAffiliates(selectedProvince);
+    }
+  }, [fetchAffiliates, selectedProvince]);
+
   useEffect(() => {
+    // Si no hay provincia seleccionada, no mostrar afiliados
+    if (!selectedProvince || selectedProvince === '') {
+      setFilteredAffiliates([]);
+      return;
+    }
     // Apply filters
     let result = [...affiliates];
-    
     if (showOnlyActive) {
       result = result.filter(a => a.active);
     }
-    
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       result = result.filter(a => 
@@ -32,12 +39,10 @@ const AffiliatesPage: React.FC = () => {
         a.document_id.toLowerCase().includes(searchLower)
       );
     }
-    
     // Sort by name
     result.sort((a, b) => a.name.localeCompare(b.name));
-    
     setFilteredAffiliates(result);
-  }, [affiliates, searchTerm, showOnlyActive]);
+  }, [affiliates, searchTerm, showOnlyActive, selectedProvince]);
   
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -50,8 +55,7 @@ const AffiliatesPage: React.FC = () => {
           </Button>
         </Link>
       </div>
-      <img src="https://res.cloudinary.com/dhvrrxejo/image/upload/v1745694849/portada_app_jdttpr.png" alt="Publicidad Econecta" className="h-25 w-40 full bg-white p-0.8 border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" />
-          <h4 className="text-2xl font-bold text-gray-800">DESCARGAR LA APP DE ECONECTA2</h4>
+      
       <Card>
         <CardHeader className="bg-gray-50">
           <div className="flex flex-col sm:flex-row gap-4">

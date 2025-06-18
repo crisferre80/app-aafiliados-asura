@@ -357,14 +357,15 @@ const AffiliateDetailPage: React.FC = () => {
       doc.text(`Cantidad de Hijos: ${affiliate.children_count || 'No especificado'}`, 14, 100);
       doc.text(`Fecha de Nacimiento: ${affiliate.birth_date ? formatDate(affiliate.birth_date) : 'No especificada'}`, 14, 110);
       doc.text(`Fecha de Afiliación: ${formatDate(affiliate.join_date)}`, 14, 120);
+      doc.text(`Provincia: ${affiliate.provincia || 'No especificada'}`, 14, 130); // Nueva línea para la provincia
   
       // Información de contacto
       doc.setFontSize(14);
-      doc.text('Información de Contacto', 14, 140);
+      doc.text('Información de Contacto', 14, 150);
       doc.setFontSize(12);
-      doc.text(`Teléfono: ${affiliate.phone || 'No especificado'}`, 14, 150);
-      doc.text(`Correo Electrónico: ${affiliate.email || 'No especificado'}`, 14, 160);
-      doc.text(`Dirección: ${affiliate.address || 'No especificada'}`, 14, 170);
+      doc.text(`Teléfono: ${affiliate.phone || 'No especificado'}`, 14, 160);
+      doc.text(`Correo Electrónico: ${affiliate.email || 'No especificado'}`, 14, 170);
+      doc.text(`Dirección: ${affiliate.address || 'No especificada'}`, 14, 180);
   
       // Guardar el documento
       doc.save(`Resumen_Afiliado_${affiliate.name}.pdf`);
@@ -582,6 +583,13 @@ const handleDelete = async () => {
                   <p className="mt-1 text-gray-800">
                     {formatDate(affiliate.join_date)}
                   </p>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">
+                    Provincia
+                  </h4>
+                  <p className="mt-1 text-gray-800">{affiliate.province || 'No especificada'}</p>
                 </div>
               </div>
 
