@@ -1,0 +1,128 @@
+.payment-page {
+    font-family: Arial, sans-serif;
+    color: #333;
+    margin: 0 auto;
+    max-width: 800px;
+    padding: 20px;
+}
+
+.payment-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.payment-header h1 {
+    font-size: 2.5rem;
+    color: #3483FA;
+}
+
+.payment-header p {
+    font-size: 1.2rem;
+    color: #666;
+}
+
+.payment-main {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.payment-form label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.payment-form input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.payment-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.btn-primary {
+    background-color: #3483FA;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #2a68c8;
+}
+
+.btn-secondary {
+    background-color: #34FA83;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: #2ac86a;
+}
+
+.payment-link {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.btn-link {
+    background-color: #FFA500;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.btn-link:hover {
+    background-color: #cc8400;
+}
+
+.subscription-section {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.btn-subscribe {
+    background-color: #3483FA;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.btn-subscribe:hover {
+    background-color: #2a68c8;
+}
+
+.payment-footer {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.footer-logo {
+    width: 100px;
+    margin-bottom: 10px;
+}

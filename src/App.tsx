@@ -18,6 +18,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import AffiliateCredential from './pages/AffiliateCredential';
 import ComisionDirectivaPage from './pages/ComisionDirectivaPage';
 import Descargas from './pages/Descargas';
+import PagosFormularioML from './pages/PagosFormularioML';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuthStore();
@@ -66,6 +67,7 @@ function App() {
             </Route>
 
             <Route path="payments" element={<PaymentsControlPage />} />
+            <Route path="pagos-formulario-ml" element={<PagosFormularioML />} />
 
             <Route path="activities">
               <Route index element={<ActivitiesPage />} />
